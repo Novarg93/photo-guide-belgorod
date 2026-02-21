@@ -1,0 +1,12 @@
+[mcp_servers.laravel-boost]
+command = "C:\\php\\php.exe"
+args = ["artisan", "boost:mcp"]
+cwd = "C:\\Users\\Novarg\\Desktop\\GitPractice\\photo-guide-belgorod"
+
+[mcp_servers.herd]
+command = "php"
+args = ["C:/Users/Novarg/.config/herd/bin/herd-mcp.phar"]
+cwd = "C:\\Users\\Novarg\\Desktop\\GitPractice\\photo-guide-belgorod"
+
+[mcp_servers.herd.env]
+SITE_PATH = "C:\\Users\\Novarg\\Desktop\\GitPractice\\photo-guide-belgorod"
