@@ -32,6 +32,17 @@ class Example extends Model
         ];
     }
 
+    public function getImageUrlAttribute(): string
+    {
+        if (filled($this->cover_image)) {
+            return $this->cover_image;
+        }
+
+        $keyword = $this->mood ?: $this->season_hint ?: 'portrait';
+
+        return 'https://source.unsplash.com/600x800/?'.rawurlencode($keyword);
+    }
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);

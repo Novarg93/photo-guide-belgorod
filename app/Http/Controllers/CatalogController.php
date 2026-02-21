@@ -54,10 +54,21 @@ class CatalogController extends Controller
                 'location_hint',
                 'season_hint',
                 'clothing_hint',
+                'cover_image',
             ])
             ->where('is_active', true)
             ->orderBy('title')
-            ->get();
+            ->get()
+            ->map(fn ($example): array => [
+                'id' => $example->id,
+                'title' => $example->title,
+                'summary' => $example->summary,
+                'mood' => $example->mood,
+                'location_hint' => $example->location_hint,
+                'season_hint' => $example->season_hint,
+                'clothing_hint' => $example->clothing_hint,
+                'image_url' => $example->image_url,
+            ]);
 
         return Inertia::render('CategoryShow', [
             'category' => [
