@@ -30,7 +30,11 @@ it('shows active examples on category page', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->component('CategoryShow')
             ->has('examples', 1)
-            ->where('examples.0.title', 'Golden Hour Walk'));
+            ->where('examples.0.title', 'Golden Hour Walk')
+            ->where('activeFilters.mood', null)
+            ->where('activeFilters.season', null)
+            ->where('activeFilters.location', null)
+            ->where('activeFilters.clothing', null));
 });
 
 it('belongs examples to their category', function () {
@@ -52,4 +56,86 @@ it('auto-generates example slug on create when it is not provided', function () 
     ]);
 
     expect($example->slug)->toBe('sunset-portrait-set');
+});
+
+it('filters examples by query params and returns active filters', function () {
+    $category = Category::factory()->create([
+        'slug' => 'family',
+        'is_active' => true,
+    ]);
+
+    Example::factory()->create([
+        'category_id' => $category->id,
+        'title' => 'Filtered Match',
+        'slug' => 'filtered-match',
+        'mood' => 'Warm',
+        'season_hint' => 'Autumn',
+        'location_hint' => 'City center',
+        'clothing_hint' => 'Casual',
+        'is_active' => true,
+    ]);
+
+    Example::factory()->create([
+        'category_id' => $category->id,
+        'title' => 'Different Example',
+        'slug' => 'different-example',
+        'mood' => 'Bold',
+        'season_hint' => 'Winter',
+        'location_hint' => 'Studio loft',
+        'clothing_hint' => 'Formal',
+        'is_active' => true,
+    ]);
+
+    $this->get(route('categories.show', [
+        'slug' => $category->slug,
+        'mood' => 'Warm',
+        'season' => 'Autumn',
+        'location' => 'City center',
+        'clothing' => 'Casual',
+    ]))
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('CategoryShow')
+            ->has('examples', 1)
+            ->where('examples.0.title', 'Filtered Match')
+            ->where('activeFilters.mood', 'Warm')
+            ->where('activeFilters.season', 'Autumn')
+            ->where('activeFilters.location', 'City center')
+            ->where('activeFilters.clothing', 'Casual'));
+});
+
+it('returns filter options only for current category active examples', function () {
+    $category = Category::factory()->create([
+        'slug' => 'wedding',
+        'is_active' => true,
+    ]);
+
+    Example::factory()->create([
+        'category_id' => $category->id,
+        'slug' => 'option-a',
+        'mood' => 'Calm',
+        'season_hint' => 'Spring',
+        'location_hint' => 'Park',
+        'clothing_hint' => 'Neutral',
+        'is_active' => true,
+    ]);
+
+    Example::factory()->create([
+        'category_id' => $category->id,
+        'slug' => 'option-b',
+        'mood' => 'Bold',
+        'season_hint' => 'Winter',
+        'location_hint' => 'Studio',
+        'clothing_hint' => 'Classic',
+        'is_active' => false,
+    ]);
+
+    $this->get(route('categories.show', ['slug' => $category->slug]))
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('CategoryShow')
+            ->where('filterOptions.moods', ['Calm'])
+            ->where('filterOptions.seasons', ['Spring'])
+            ->where('filterOptions.locations', ['Park'])
+            ->where('filterOptions.clothings', ['Neutral']));
 });

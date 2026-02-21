@@ -1,6 +1,6 @@
 ﻿<script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { ref } from 'vue';
 import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,9 +12,11 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { catalog } from '@/routes';
+import { show as showCategory } from '@/routes/categories';
 
 interface Category {
     name: string;
+    slug: string;
     description: string | null;
 }
 
@@ -29,54 +31,91 @@ interface ExampleItem {
     image_url: string;
 }
 
+interface FilterOptions {
+    moods: string[];
+    seasons: string[];
+    locations: string[];
+    clothings: string[];
+}
+
+interface ActiveFilters {
+    mood: string | null;
+    season: string | null;
+    location: string | null;
+    clothing: string | null;
+}
+
 const props = defineProps<{
     category: Category;
     examples: ExampleItem[];
+    filterOptions: FilterOptions;
+    activeFilters: ActiveFilters;
     metaTitle: string;
     metaDescription: string;
 }>();
 
-const selectedMood = ref<string>('all');
-const selectedSeason = ref<string>('all');
-const selectedLocation = ref<string>('all');
-const selectedClothing = ref<string>('all');
+const selectedMood = ref<string>(props.activeFilters.mood ?? 'all');
+const selectedSeason = ref<string>(props.activeFilters.season ?? 'all');
+const selectedLocation = ref<string>(props.activeFilters.location ?? 'all');
+const selectedClothing = ref<string>(props.activeFilters.clothing ?? 'all');
 
-const collectOptions = (key: keyof ExampleItem): string[] => {
-    return [...new Set(props.examples.map((example) => example[key]).filter((value): value is string => Boolean(value)))].sort();
+const applyFilters = (): void => {
+    const query: Record<string, string> = {};
+
+    if (selectedMood.value !== 'all') {
+        query.mood = selectedMood.value;
+    }
+
+    if (selectedSeason.value !== 'all') {
+        query.season = selectedSeason.value;
+    }
+
+    if (selectedLocation.value !== 'all') {
+        query.location = selectedLocation.value;
+    }
+
+    if (selectedClothing.value !== 'all') {
+        query.clothing = selectedClothing.value;
+    }
+
+    router.visit(showCategory.url({ slug: props.category.slug }, { query }), {
+        preserveState: true,
+        preserveScroll: true,
+        replace: true,
+    });
 };
 
-const moodOptions = computed(() => collectOptions('mood'));
-const seasonOptions = computed(() => collectOptions('season_hint'));
-const locationOptions = computed(() => collectOptions('location_hint'));
-const clothingOptions = computed(() => collectOptions('clothing_hint'));
+const updateFilter = (key: 'mood' | 'season' | 'location' | 'clothing', value: string): void => {
+    if (key === 'mood') {
+        selectedMood.value = value;
+    }
 
-const filteredExamples = computed(() => {
-    return props.examples.filter((example) => {
-        if (selectedMood.value !== 'all' && example.mood !== selectedMood.value) {
-            return false;
-        }
+    if (key === 'season') {
+        selectedSeason.value = value;
+    }
 
-        if (selectedSeason.value !== 'all' && example.season_hint !== selectedSeason.value) {
-            return false;
-        }
+    if (key === 'location') {
+        selectedLocation.value = value;
+    }
 
-        if (selectedLocation.value !== 'all' && example.location_hint !== selectedLocation.value) {
-            return false;
-        }
+    if (key === 'clothing') {
+        selectedClothing.value = value;
+    }
 
-        if (selectedClothing.value !== 'all' && example.clothing_hint !== selectedClothing.value) {
-            return false;
-        }
-
-        return true;
-    });
-});
+    applyFilters();
+};
 
 const resetFilters = (): void => {
     selectedMood.value = 'all';
     selectedSeason.value = 'all';
     selectedLocation.value = 'all';
     selectedClothing.value = 'all';
+
+    router.visit(showCategory.url({ slug: props.category.slug }), {
+        preserveState: true,
+        preserveScroll: true,
+        replace: true,
+    });
 };
 </script>
 
@@ -100,47 +139,47 @@ const resetFilters = (): void => {
                     </p>
                 </div>
 
-                <p class="text-sm text-zinc-500">{{ filteredExamples.length }} results</p>
+                <p class="text-sm text-zinc-500">{{ examples.length }} results</p>
             </div>
 
             <div class="mt-8 grid gap-3 rounded-2xl border border-zinc-200 bg-zinc-50/70 p-4 md:grid-cols-5">
-                <Select v-model="selectedMood">
+                <Select :model-value="selectedMood" @update:model-value="(value) => updateFilter('mood', String(value))">
                     <SelectTrigger>
                         <SelectValue placeholder="Mood" />
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all">All moods</SelectItem>
-                        <SelectItem v-for="option in moodOptions" :key="`mood-${option}`" :value="option">{{ option }}</SelectItem>
+                        <SelectItem v-for="option in filterOptions.moods" :key="`mood-${option}`" :value="option">{{ option }}</SelectItem>
                     </SelectContent>
                 </Select>
 
-                <Select v-model="selectedSeason">
+                <Select :model-value="selectedSeason" @update:model-value="(value) => updateFilter('season', String(value))">
                     <SelectTrigger>
                         <SelectValue placeholder="Season" />
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all">All seasons</SelectItem>
-                        <SelectItem v-for="option in seasonOptions" :key="`season-${option}`" :value="option">{{ option }}</SelectItem>
+                        <SelectItem v-for="option in filterOptions.seasons" :key="`season-${option}`" :value="option">{{ option }}</SelectItem>
                     </SelectContent>
                 </Select>
 
-                <Select v-model="selectedLocation">
+                <Select :model-value="selectedLocation" @update:model-value="(value) => updateFilter('location', String(value))">
                     <SelectTrigger>
                         <SelectValue placeholder="Location" />
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all">All locations</SelectItem>
-                        <SelectItem v-for="option in locationOptions" :key="`location-${option}`" :value="option">{{ option }}</SelectItem>
+                        <SelectItem v-for="option in filterOptions.locations" :key="`location-${option}`" :value="option">{{ option }}</SelectItem>
                     </SelectContent>
                 </Select>
 
-                <Select v-model="selectedClothing">
+                <Select :model-value="selectedClothing" @update:model-value="(value) => updateFilter('clothing', String(value))">
                     <SelectTrigger>
                         <SelectValue placeholder="Clothing" />
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all">All clothing</SelectItem>
-                        <SelectItem v-for="option in clothingOptions" :key="`clothing-${option}`" :value="option">{{ option }}</SelectItem>
+                        <SelectItem v-for="option in filterOptions.clothings" :key="`clothing-${option}`" :value="option">{{ option }}</SelectItem>
                     </SelectContent>
                 </Select>
 
@@ -149,7 +188,7 @@ const resetFilters = (): void => {
 
             <div class="mt-8 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
                 <article
-                    v-for="example in filteredExamples"
+                    v-for="example in examples"
                     :key="example.id"
                     class="group relative overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-100"
                 >
@@ -180,7 +219,7 @@ const resetFilters = (): void => {
             </div>
 
             <div
-                v-if="filteredExamples.length === 0"
+                v-if="examples.length === 0"
                 class="mt-8 rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-5 text-zinc-600"
             >
                 No examples match the selected filters.
