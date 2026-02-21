@@ -45,11 +45,26 @@ class CatalogController extends Controller
             ->where('is_active', true)
             ->firstOrFail();
 
+        $examples = $category->examples()
+            ->select([
+                'id',
+                'title',
+                'summary',
+                'mood',
+                'location_hint',
+                'season_hint',
+                'clothing_hint',
+            ])
+            ->where('is_active', true)
+            ->orderBy('title')
+            ->get();
+
         return Inertia::render('CategoryShow', [
             'category' => [
                 'name' => $category->name,
                 'description' => $category->description,
             ],
+            'examples' => $examples,
             'metaTitle' => $category->seo_title ?: $category->name,
             'metaDescription' => $category->seo_description ?: ($category->description ?: 'Photo session category page.'),
         ]);

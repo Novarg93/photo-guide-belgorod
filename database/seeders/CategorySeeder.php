@@ -14,13 +14,13 @@ class CategorySeeder extends Seeder
     public function run(): void
     {
         $categories = [
-            'Свадебная',
-            'Семейная',
+            'Wedding',
+            'Family',
             'Love Story',
-            'Индивидуальная',
-            'Контент для соцсетей',
-            'Беременность',
-            'Детская',
+            'Personal',
+            'Social Content',
+            'Pregnancy',
+            'Kids',
         ];
 
         foreach ($categories as $name) {
@@ -28,7 +28,7 @@ class CategorySeeder extends Seeder
                 ['slug' => Str::slug($name)],
                 [
                     'name' => $name,
-                    'description' => "Категория фотосессий: {$name}.",
+                    'description' => "Photo session category: {$name}.",
                     'is_active' => true,
                 ],
             );

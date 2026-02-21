@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 class Category extends Model
@@ -25,6 +26,11 @@ class Category extends Model
         return [
             'is_active' => 'boolean',
         ];
+    }
+
+    public function examples(): HasMany
+    {
+        return $this->hasMany(Example::class);
     }
 
     protected static function booted(): void
