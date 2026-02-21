@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
 import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-vue-next';
 import { computed } from 'vue';
@@ -48,6 +48,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const page = usePage();
 const auth = computed(() => page.props.auth);
+const isAuthenticated = computed(() => Boolean(auth.value?.user));
 const { isCurrentUrl, whenCurrentUrl } = useCurrentUrl();
 
 const activeItemStyles =
@@ -79,7 +80,6 @@ const rightNavItems: NavItem[] = [
     <div>
         <div class="border-b border-sidebar-border/80">
             <div class="mx-auto flex h-16 items-center px-4 md:max-w-7xl">
-                <!-- Mobile Menu -->
                 <div class="lg:hidden">
                     <Sheet>
                         <SheetTrigger :as-child="true">
@@ -150,7 +150,6 @@ const rightNavItems: NavItem[] = [
                     <AppLogo />
                 </Link>
 
-                <!-- Desktop Menu -->
                 <div class="hidden h-full lg:flex lg:flex-1">
                     <NavigationMenu class="ml-10 flex h-full items-stretch">
                         <NavigationMenuList
@@ -238,7 +237,7 @@ const rightNavItems: NavItem[] = [
                         </div>
                     </div>
 
-                    <DropdownMenu>
+                    <DropdownMenu v-if="isAuthenticated">
                         <DropdownMenuTrigger :as-child="true">
                             <Button
                                 variant="ghost"
@@ -249,9 +248,9 @@ const rightNavItems: NavItem[] = [
                                     class="size-8 overflow-hidden rounded-full"
                                 >
                                     <AvatarImage
-                                        v-if="auth.user.avatar"
+                                        v-if="auth.user?.avatar"
                                         :src="auth.user.avatar"
-                                        :alt="auth.user.name"
+                                        :alt="auth.user?.name"
                                     />
                                     <AvatarFallback
                                         class="rounded-lg bg-neutral-200 font-semibold text-black dark:bg-neutral-700 dark:text-white"

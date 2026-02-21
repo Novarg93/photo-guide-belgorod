@@ -1,5 +1,6 @@
 ﻿<script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
+import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue';
 import { home } from '@/routes';
 
 interface CategoryCard {
@@ -18,12 +19,12 @@ defineProps<{
 </script>
 
 <template>
-    <Head :title="metaTitle">
-        <meta head-key="description" name="description" :content="metaDescription" />
-    </Head>
+    <AppHeaderLayout>
+        <Head :title="metaTitle">
+            <meta head-key="description" name="description" :content="metaDescription" />
+        </Head>
 
-    <main class="min-h-screen bg-zinc-50 px-6 py-10">
-        <div class="mx-auto w-full max-w-6xl">
+        <section class="mx-auto w-full max-w-6xl py-8">
             <Link :href="home()" class="text-sm text-zinc-500 transition hover:text-zinc-900">Back to home</Link>
 
             <h1 class="mt-4 text-3xl font-semibold tracking-tight text-zinc-900 md:text-4xl">
@@ -49,6 +50,6 @@ defineProps<{
                     </p>
                 </Link>
             </div>
-        </div>
-    </main>
+        </section>
+    </AppHeaderLayout>
 </template>

@@ -33,8 +33,8 @@ class CatalogController extends Controller
 
         return Inertia::render('Catalog', [
             'categories' => $categories,
-            'metaTitle' => 'Каталог фотосессий',
-            'metaDescription' => 'Выберите категорию фотосессии и переходите к следующему этапу подбора.',
+            'metaTitle' => 'Photo Session Catalog',
+            'metaDescription' => 'Choose a category and continue to the next planning step.',
         ]);
     }
 
@@ -51,7 +51,7 @@ class CatalogController extends Controller
                 'description' => $category->description,
             ],
             'metaTitle' => $category->seo_title ?: $category->name,
-            'metaDescription' => $category->seo_description ?: ($category->description ?: 'Категория фотосессий в Белгороде.'),
+            'metaDescription' => $category->seo_description ?: ($category->description ?: 'Photo session category page.'),
         ]);
     }
 }

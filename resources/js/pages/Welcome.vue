@@ -1,5 +1,7 @@
 ﻿<script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
+import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue';
+import { Button } from '@/components/ui/button';
 import { catalog } from '@/routes';
 
 defineProps<{
@@ -9,12 +11,12 @@ defineProps<{
 </script>
 
 <template>
-    <Head :title="metaTitle">
-        <meta head-key="description" name="description" :content="metaDescription" />
-    </Head>
+    <AppHeaderLayout>
+        <Head :title="metaTitle">
+            <meta head-key="description" name="description" :content="metaDescription" />
+        </Head>
 
-    <main class="min-h-screen bg-[linear-gradient(180deg,#fff8ef_0%,#fff_55%,#f8fbff_100%)] text-zinc-900">
-        <section class="mx-auto flex min-h-screen w-full max-w-5xl flex-col items-start justify-center px-6 py-16">
+        <section class="mx-auto w-full max-w-5xl py-12 md:py-20">
             <p class="mb-4 inline-flex rounded-full border border-zinc-200 bg-white/70 px-4 py-1 text-xs font-medium uppercase tracking-[0.2em] text-zinc-500">
                 Photo Guide Belgorod
             </p>
@@ -27,12 +29,11 @@ defineProps<{
                 Browse categories, pick the right session type, and move to the next planning step.
             </p>
 
-            <Link
-                :href="catalog()"
-                class="mt-10 inline-flex items-center rounded-xl bg-zinc-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-zinc-700"
-            >
-                Choose a photo session
-            </Link>
+            <div class="mt-10">
+                <Button as-child size="lg">
+                    <Link :href="catalog()">Choose a photo session</Link>
+                </Button>
+            </div>
         </section>
-    </main>
+    </AppHeaderLayout>
 </template>

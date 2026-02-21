@@ -61,7 +61,7 @@ it('returns not found for inactive category page', function () {
 
 it('auto-generates slug on create when it is not provided', function () {
     $category = Category::query()->create([
-        'name' => 'Свадебная съёмка',
+        'name' => 'Wedding Session',
         'description' => 'Test',
         'is_active' => true,
     ]);
