@@ -6,6 +6,16 @@ import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import {
     Select,
     SelectContent,
     SelectItem,
@@ -60,6 +70,11 @@ const selectedSeason = ref<string>(props.activeFilters.season ?? 'all');
 const selectedLocation = ref<string>(props.activeFilters.location ?? 'all');
 const selectedClothing = ref<string>(props.activeFilters.clothing ?? 'all');
 const selectedExampleIds = ref<number[]>([]);
+const isBriefDialogOpen = ref(false);
+const briefPeopleCount = ref<string>('not_set');
+const briefNotes = ref<string>('');
+const briefRetouchPreference = ref<string>('not_set');
+const briefColorStyle = ref<string>('not_set');
 
 const applyFilters = (): void => {
     const query: Record<string, string> = {};
@@ -122,6 +137,8 @@ const resetFilters = (): void => {
 
 const createBrief = (): void => {
     const toNullable = (value: string): string | null => (value === 'all' ? null : value);
+    const toNullableBriefValue = (value: string): string | null => (value === 'not_set' ? null : value);
+    const preparedNotes = briefNotes.value.trim();
 
     router.post(
         '/briefs',
@@ -131,10 +148,17 @@ const createBrief = (): void => {
             season: toNullable(selectedSeason.value),
             location: toNullable(selectedLocation.value),
             clothing: toNullable(selectedClothing.value),
+            people_count: toNullableBriefValue(briefPeopleCount.value),
+            notes: preparedNotes.length > 0 ? preparedNotes : null,
+            retouch_preference: toNullableBriefValue(briefRetouchPreference.value),
+            color_style: toNullableBriefValue(briefColorStyle.value),
             selected_example_ids: selectedExampleIds.value,
         },
         {
             preserveScroll: true,
+            onSuccess: () => {
+                isBriefDialogOpen.value = false;
+            },
         },
     );
 };
@@ -151,6 +175,18 @@ const toggleExampleSelection = (exampleId: number): void => {
 
 const isExampleSelected = (exampleId: number): boolean => {
     return selectedExampleIds.value.includes(exampleId);
+};
+
+const setBriefPeopleCount = (value: string): void => {
+    briefPeopleCount.value = value;
+};
+
+const setBriefRetouchPreference = (value: string): void => {
+    briefRetouchPreference.value = value;
+};
+
+const setBriefColorStyle = (value: string): void => {
+    briefColorStyle.value = value;
 };
 </script>
 
@@ -219,7 +255,95 @@ const isExampleSelected = (exampleId: number): boolean => {
                 </Select>
 
                 <Button variant="outline" @click="resetFilters">Reset</Button>
-                <Button @click="createBrief">Create brief</Button>
+                <Dialog v-model:open="isBriefDialogOpen">
+                    <DialogTrigger as-child>
+                        <Button>Create brief</Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Create brief</DialogTitle>
+                            <DialogDescription>
+                                Add optional details before generating your brief link.
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <div class="space-y-4 py-2">
+                            <div class="space-y-2">
+                                <Label for="people-count">People count</Label>
+                                <Select
+                                    :model-value="briefPeopleCount"
+                                    @update:model-value="(value) => setBriefPeopleCount(String(value))"
+                                >
+                                    <SelectTrigger id="people-count">
+                                        <SelectValue placeholder="Optional" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="not_set">Not specified</SelectItem>
+                                        <SelectItem value="1">1</SelectItem>
+                                        <SelectItem value="2">2</SelectItem>
+                                        <SelectItem value="3-4">3-4</SelectItem>
+                                        <SelectItem value="5+">5+</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div class="space-y-2">
+                                <Label for="brief-notes">Notes</Label>
+                                <textarea
+                                    id="brief-notes"
+                                    v-model="briefNotes"
+                                    rows="4"
+                                    class="flex w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm shadow-xs outline-none ring-offset-white placeholder:text-zinc-400 focus-visible:ring-2 focus-visible:ring-zinc-900 disabled:cursor-not-allowed disabled:opacity-50"
+                                    placeholder="Что важно / что не хочу / стиль / реквизит / обработка"
+                                />
+                            </div>
+
+                            <div class="space-y-2">
+                                <Label for="retouch-preference">Retouch preference</Label>
+                                <Select
+                                    :model-value="briefRetouchPreference"
+                                    @update:model-value="(value) => setBriefRetouchPreference(String(value))"
+                                >
+                                    <SelectTrigger id="retouch-preference">
+                                        <SelectValue placeholder="Optional" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="not_set">Not specified</SelectItem>
+                                        <SelectItem value="Natural">Natural</SelectItem>
+                                        <SelectItem value="Classic">Classic</SelectItem>
+                                        <SelectItem value="Glam">Glam</SelectItem>
+                                        <SelectItem value="Photographer decides">Photographer decides</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div class="space-y-2">
+                                <Label for="color-style">Color style</Label>
+                                <Select
+                                    :model-value="briefColorStyle"
+                                    @update:model-value="(value) => setBriefColorStyle(String(value))"
+                                >
+                                    <SelectTrigger id="color-style">
+                                        <SelectValue placeholder="Optional" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="not_set">Not specified</SelectItem>
+                                        <SelectItem value="Warm">Warm</SelectItem>
+                                        <SelectItem value="Cool">Cool</SelectItem>
+                                        <SelectItem value="Neutral">Neutral</SelectItem>
+                                        <SelectItem value="Film">Film</SelectItem>
+                                        <SelectItem value="Not sure">Not sure</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
+                        <DialogFooter class="gap-2">
+                            <Button variant="outline" @click="isBriefDialogOpen = false">Cancel</Button>
+                            <Button @click="createBrief">Generate link</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
 
             <div class="mt-8 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">

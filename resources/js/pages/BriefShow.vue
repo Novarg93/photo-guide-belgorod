@@ -36,6 +36,10 @@ const props = defineProps<{
     filters: Filters;
     examples: ExampleItem[];
     selectedExampleIds: number[];
+    peopleCount: string | null;
+    notes: string | null;
+    retouchPreference: string | null;
+    colorStyle: string | null;
     shareUrl: string;
     token: string;
     metaTitle: string;
@@ -88,8 +92,75 @@ const backToCategoryUrl = computed(() => {
     return showCategory.url({ slug: props.category.slug }, { query });
 });
 
+const briefText = computed(() => {
+    const lines: string[] = [
+        'Бриф для фотографа',
+        `Категория: ${props.category.name}`,
+    ];
+
+    if (selectedFilterBadges.value.length > 0) {
+        lines.push('Фильтры:');
+
+        selectedFilterBadges.value.forEach((badge) => {
+            lines.push(`- ${badge.label}: ${badge.value}`);
+        });
+    } else {
+        lines.push('Фильтры: не выбраны');
+    }
+
+    if (props.peopleCount) {
+        lines.push(`Количество человек: ${props.peopleCount}`);
+    }
+
+    if (props.notes) {
+        lines.push(`Пожелания: ${props.notes}`);
+    }
+
+    if (props.retouchPreference) {
+        lines.push(`Ретушь: ${props.retouchPreference}`);
+    }
+
+    if (props.colorStyle) {
+        lines.push(`Цвет: ${props.colorStyle}`);
+    }
+
+    lines.push(`Ссылка: ${props.shareUrl}`);
+    lines.push('Примеры:');
+
+    if (props.examples.length === 0) {
+        lines.push('1. Подходящих примеров нет');
+    } else {
+        props.examples.forEach((example, index) => {
+            const hints: string[] = [];
+
+            if (example.mood) {
+                hints.push(`настроение: ${example.mood}`);
+            }
+
+            if (example.location_hint) {
+                hints.push(`локация: ${example.location_hint}`);
+            }
+
+            lines.push(
+                `${index + 1}. ${example.title}${hints.length > 0 ? ` (${hints.join(', ')})` : ''}`,
+            );
+        });
+    }
+
+    return lines.join('\n');
+});
+
 const copyLink = async (): Promise<void> => {
     await navigator.clipboard.writeText(props.shareUrl);
+    copied.value = true;
+
+    window.setTimeout(() => {
+        copied.value = false;
+    }, 1500);
+};
+
+const copyBriefText = async (): Promise<void> => {
+    await navigator.clipboard.writeText(briefText.value);
     copied.value = true;
 
     window.setTimeout(() => {
@@ -125,8 +196,20 @@ const copyLink = async (): Promise<void> => {
                 </Badge>
             </div>
 
+            <section
+                v-if="peopleCount || notes || retouchPreference || colorStyle"
+                class="mt-6 rounded-xl border border-zinc-200 bg-zinc-50 p-4"
+            >
+                <h3 class="text-sm font-semibold text-zinc-900">Details</h3>
+                <p v-if="peopleCount" class="mt-2 text-sm text-zinc-700">People count: {{ peopleCount }}</p>
+                <p v-if="notes" class="mt-2 whitespace-pre-line text-sm text-zinc-700">{{ notes }}</p>
+                <p v-if="retouchPreference" class="mt-2 text-sm text-zinc-700">Retouch preference: {{ retouchPreference }}</p>
+                <p v-if="colorStyle" class="mt-2 text-sm text-zinc-700">Color style: {{ colorStyle }}</p>
+            </section>
+
             <div class="mt-6 flex flex-wrap items-center gap-3">
                 <Button @click="copyLink">Copy link</Button>
+                <Button variant="outline" @click="copyBriefText">Copy brief text</Button>
                 <span v-if="copied" class="text-sm text-green-600">Copied</span>
                 <p class="max-w-full truncate text-sm text-zinc-500">{{ shareUrl }}</p>
             </div>

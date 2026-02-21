@@ -27,6 +27,10 @@ class StoreBriefRequest extends FormRequest
             'season' => ['nullable', 'string'],
             'location' => ['nullable', 'string'],
             'clothing' => ['nullable', 'string'],
+            'people_count' => ['nullable', 'string', 'in:1,2,3-4,5+'],
+            'notes' => ['nullable', 'string'],
+            'retouch_preference' => ['nullable', 'string'],
+            'color_style' => ['nullable', 'string'],
             'selected_example_ids' => ['nullable', 'array'],
             'selected_example_ids.*' => ['integer', 'exists:examples,id'],
         ];

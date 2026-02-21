@@ -23,6 +23,8 @@ it('creates brief from category filters and redirects to public brief page', fun
         'season' => null,
         'location' => 'City center',
         'clothing' => null,
+        'people_count' => '3-4',
+        'notes' => 'No studio. Natural light only.',
         'selected_example_ids' => [$selectedExample->id],
     ]);
 
@@ -32,7 +34,9 @@ it('creates brief from category filters and redirects to public brief page', fun
         ->and($brief?->category_id)->toBe($category->id)
         ->and($brief?->filters['mood'])->toBe('Warm')
         ->and($brief?->filters['season'])->toBeNull()
-        ->and($brief?->selected_example_ids)->toBe([$selectedExample->id]);
+        ->and($brief?->selected_example_ids)->toBe([$selectedExample->id])
+        ->and($brief?->people_count)->toBe('3-4')
+        ->and($brief?->notes)->toBe('No studio. Natural light only.');
 
     $response->assertRedirect(route('brief.show', ['token' => $brief->public_token]));
 });
@@ -72,6 +76,8 @@ it('shows public brief page with selected examples only and share link', functio
             'clothing' => null,
         ],
         'selected_example_ids' => [$selectedExample->id],
+        'people_count' => '2',
+        'notes' => 'Focus on candid photos.',
     ]);
 
     $this->get(route('brief.show', ['token' => $brief->public_token]))
@@ -83,6 +89,8 @@ it('shows public brief page with selected examples only and share link', functio
             ->has('examples', 1)
             ->where('examples.0.title', 'Selected First')
             ->where('selectedExampleIds.0', $selectedExample->id)
+            ->where('peopleCount', '2')
+            ->where('notes', 'Focus on candid photos.')
             ->where('shareUrl', route('brief.show', ['token' => $brief->public_token])));
 });
 
@@ -143,4 +151,46 @@ it('shows up to six filtered examples when selected examples are empty', functio
             ->where('examples.0.title', 'Alpha')
             ->where('examples.1.title', 'Zeta')
             ->where('shareUrl', route('brief.show', ['token' => $brief->public_token])));
+});
+
+it('stores and returns editing preferences on brief show', function () {
+    $category = Category::factory()->create([
+        'name' => 'Family',
+        'slug' => 'family',
+        'is_active' => true,
+    ]);
+
+    $selectedExample = Example::factory()->create([
+        'category_id' => $category->id,
+        'title' => 'Selected',
+        'slug' => 'selected',
+        'is_active' => true,
+    ]);
+
+    $response = $this->post(route('brief.store'), [
+        'category_slug' => $category->slug,
+        'mood' => null,
+        'season' => null,
+        'location' => null,
+        'clothing' => null,
+        'people_count' => null,
+        'notes' => null,
+        'retouch_preference' => 'Natural',
+        'color_style' => 'Film',
+        'selected_example_ids' => [$selectedExample->id],
+    ]);
+
+    $brief = Brief::query()->latest('id')->firstOrFail();
+
+    expect($brief->retouch_preference)->toBe('Natural')
+        ->and($brief->color_style)->toBe('Film');
+
+    $response->assertRedirect(route('brief.show', ['token' => $brief->public_token]));
+
+    $this->get(route('brief.show', ['token' => $brief->public_token]))
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('BriefShow')
+            ->where('retouchPreference', 'Natural')
+            ->where('colorStyle', 'Film'));
 });

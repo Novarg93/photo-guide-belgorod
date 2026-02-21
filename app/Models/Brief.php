@@ -15,6 +15,10 @@ class Brief extends Model
         'public_token',
         'filters',
         'selected_example_ids',
+        'people_count',
+        'notes',
+        'retouch_preference',
+        'color_style',
     ];
 
     protected function casts(): array

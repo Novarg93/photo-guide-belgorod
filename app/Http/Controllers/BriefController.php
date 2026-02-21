@@ -41,6 +41,10 @@ class BriefController extends Controller
             'public_token' => (string) Str::uuid(),
             'filters' => $filters,
             'selected_example_ids' => $selectedExampleIds,
+            'people_count' => $validated['people_count'] ?? null,
+            'notes' => $validated['notes'] ?? null,
+            'retouch_preference' => $validated['retouch_preference'] ?? null,
+            'color_style' => $validated['color_style'] ?? null,
         ]);
 
         return redirect()->route('brief.show', ['token' => $brief->public_token]);
@@ -128,6 +132,10 @@ class BriefController extends Controller
             'filters' => $filters,
             'examples' => $examples,
             'selectedExampleIds' => $selectedExampleIds->all(),
+            'peopleCount' => $brief->people_count,
+            'notes' => $brief->notes,
+            'retouchPreference' => $brief->retouch_preference,
+            'colorStyle' => $brief->color_style,
             'token' => $brief->public_token,
             'shareUrl' => route('brief.show', ['token' => $brief->public_token]),
             'metaTitle' => 'Brief: '.$brief->category->name,
