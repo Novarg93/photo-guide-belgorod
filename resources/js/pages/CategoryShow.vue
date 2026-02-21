@@ -1,5 +1,6 @@
 ﻿<script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
+import { Check } from 'lucide-vue-next';
 import { ref } from 'vue';
 import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue';
 import { Badge } from '@/components/ui/badge';
@@ -58,6 +59,7 @@ const selectedMood = ref<string>(props.activeFilters.mood ?? 'all');
 const selectedSeason = ref<string>(props.activeFilters.season ?? 'all');
 const selectedLocation = ref<string>(props.activeFilters.location ?? 'all');
 const selectedClothing = ref<string>(props.activeFilters.clothing ?? 'all');
+const selectedExampleIds = ref<number[]>([]);
 
 const applyFilters = (): void => {
     const query: Record<string, string> = {};
@@ -117,6 +119,39 @@ const resetFilters = (): void => {
         replace: true,
     });
 };
+
+const createBrief = (): void => {
+    const toNullable = (value: string): string | null => (value === 'all' ? null : value);
+
+    router.post(
+        '/briefs',
+        {
+            category_slug: props.category.slug,
+            mood: toNullable(selectedMood.value),
+            season: toNullable(selectedSeason.value),
+            location: toNullable(selectedLocation.value),
+            clothing: toNullable(selectedClothing.value),
+            selected_example_ids: selectedExampleIds.value,
+        },
+        {
+            preserveScroll: true,
+        },
+    );
+};
+
+const toggleExampleSelection = (exampleId: number): void => {
+    if (selectedExampleIds.value.includes(exampleId)) {
+        selectedExampleIds.value = selectedExampleIds.value.filter((id) => id !== exampleId);
+
+        return;
+    }
+
+    selectedExampleIds.value = [...selectedExampleIds.value, exampleId];
+};
+
+const isExampleSelected = (exampleId: number): boolean => {
+    return selectedExampleIds.value.includes(exampleId);
+};
 </script>
 
 <template>
@@ -142,7 +177,7 @@ const resetFilters = (): void => {
                 <p class="text-sm text-zinc-500">{{ examples.length }} results</p>
             </div>
 
-            <div class="mt-8 grid gap-3 rounded-2xl border border-zinc-200 bg-zinc-50/70 p-4 md:grid-cols-5">
+            <div class="mt-8 grid gap-3 rounded-2xl border border-zinc-200 bg-zinc-50/70 p-4 md:grid-cols-6">
                 <Select :model-value="selectedMood" @update:model-value="(value) => updateFilter('mood', String(value))">
                     <SelectTrigger>
                         <SelectValue placeholder="Mood" />
@@ -184,13 +219,20 @@ const resetFilters = (): void => {
                 </Select>
 
                 <Button variant="outline" @click="resetFilters">Reset</Button>
+                <Button @click="createBrief">Create brief</Button>
             </div>
 
             <div class="mt-8 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
                 <article
                     v-for="example in examples"
                     :key="example.id"
-                    class="group relative overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-100"
+                    class="group relative cursor-pointer overflow-hidden rounded-2xl border bg-zinc-100"
+                    :class="[
+                        isExampleSelected(example.id)
+                            ? 'border-zinc-900 ring-2 ring-zinc-900/60'
+                            : 'border-zinc-200',
+                    ]"
+                    @click="toggleExampleSelection(example.id)"
                 >
                     <div class="aspect-4/5 overflow-hidden">
                         <img
@@ -208,6 +250,13 @@ const resetFilters = (): void => {
                         <Badge v-if="example.location_hint" variant="secondary" class="bg-white/80 text-zinc-900">
                             {{ example.location_hint }}
                         </Badge>
+                    </div>
+
+                    <div
+                        v-if="isExampleSelected(example.id)"
+                        class="absolute right-3 top-3 rounded-full bg-zinc-900 p-1.5 text-white shadow-md"
+                    >
+                        <Check class="h-4 w-4" />
                     </div>
 
                     <div class="absolute inset-x-0 bottom-0 p-4">

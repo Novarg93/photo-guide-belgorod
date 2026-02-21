@@ -33,6 +33,11 @@ class Category extends Model
         return $this->hasMany(Example::class);
     }
 
+    public function briefs(): HasMany
+    {
+        return $this->hasMany(Brief::class);
+    }
+
     protected static function booted(): void
     {
         static::saving(function (Category $category): void {
