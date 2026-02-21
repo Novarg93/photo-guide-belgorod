@@ -47,12 +47,61 @@ class CatalogController extends Controller
             ->where('is_active', true)
             ->firstOrFail();
 
-        $activeFilters = [
+        $presets = $category->examples()
+            ->select([
+                'id',
+                'title',
+                'slug',
+                'summary',
+                'mood',
+                'season_hint',
+                'location_hint',
+                'clothing_hint',
+            ])
+            ->where('is_active', true)
+            ->orderBy('title')
+            ->get();
+
+        $activePreset = null;
+        $presetSlug = $request->filled('preset') ? (string) $request->query('preset') : null;
+
+        if ($presetSlug !== null) {
+            $activePreset = $presets->firstWhere('slug', $presetSlug);
+        }
+
+        $queryFilters = [
             'mood' => $request->filled('mood') ? (string) $request->query('mood') : null,
             'season' => $request->filled('season') ? (string) $request->query('season') : null,
             'location' => $request->filled('location') ? (string) $request->query('location') : null,
             'clothing' => $request->filled('clothing') ? (string) $request->query('clothing') : null,
         ];
+
+        $explicitFilters = [
+            'mood' => $request->filled('mood'),
+            'season' => $request->filled('season'),
+            'location' => $request->filled('location'),
+            'clothing' => $request->filled('clothing'),
+        ];
+
+        $activeFilters = $queryFilters;
+
+        if ($activePreset !== null) {
+            if (! $explicitFilters['mood']) {
+                $activeFilters['mood'] = $activePreset->mood;
+            }
+
+            if (! $explicitFilters['season']) {
+                $activeFilters['season'] = $activePreset->season_hint;
+            }
+
+            if (! $explicitFilters['location']) {
+                $activeFilters['location'] = $activePreset->location_hint;
+            }
+
+            if (! $explicitFilters['clothing']) {
+                $activeFilters['clothing'] = $activePreset->clothing_hint;
+            }
+        }
 
         $activeExamplesQuery = $category->examples()
             ->where('is_active', true);
@@ -123,6 +172,23 @@ class CatalogController extends Controller
                 'description' => $category->description,
             ],
             'examples' => $examples,
+            'presets' => $presets->map(fn ($preset): array => [
+                'id' => $preset->id,
+                'title' => $preset->title,
+                'slug' => $preset->slug,
+                'summary' => $preset->summary,
+                'mood' => $preset->mood,
+                'season_hint' => $preset->season_hint,
+                'location_hint' => $preset->location_hint,
+                'clothing_hint' => $preset->clothing_hint,
+            ]),
+            'activePreset' => $activePreset !== null
+                ? [
+                    'slug' => $activePreset->slug,
+                    'title' => $activePreset->title,
+                    'summary' => $activePreset->summary,
+                ]
+                : null,
             'filterOptions' => $filterOptions,
             'activeFilters' => $activeFilters,
             'metaTitle' => $category->seo_title ?: $category->name,

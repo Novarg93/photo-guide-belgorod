@@ -1,7 +1,7 @@
-﻿<script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
+<script setup lang="ts">
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { Check } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -56,19 +56,48 @@ interface ActiveFilters {
     clothing: string | null;
 }
 
+interface PresetItem {
+    id: number;
+    title: string;
+    slug: string;
+    summary: string | null;
+    mood: string | null;
+    season_hint: string | null;
+    location_hint: string | null;
+    clothing_hint: string | null;
+}
+
+interface ActivePreset {
+    slug: string;
+    title: string;
+    summary: string | null;
+}
+
 const props = defineProps<{
     category: Category;
     examples: ExampleItem[];
+    presets: PresetItem[];
+    activePreset: ActivePreset | null;
     filterOptions: FilterOptions;
     activeFilters: ActiveFilters;
     metaTitle: string;
     metaDescription: string;
 }>();
 
+const page = usePage();
+const searchParams = new URLSearchParams(page.url.split('?')[1] ?? '');
+
 const selectedMood = ref<string>(props.activeFilters.mood ?? 'all');
 const selectedSeason = ref<string>(props.activeFilters.season ?? 'all');
 const selectedLocation = ref<string>(props.activeFilters.location ?? 'all');
 const selectedClothing = ref<string>(props.activeFilters.clothing ?? 'all');
+const selectedPreset = ref<string>(props.activePreset?.slug ?? 'custom');
+const explicitFilters = ref({
+    mood: searchParams.has('mood'),
+    season: searchParams.has('season'),
+    location: searchParams.has('location'),
+    clothing: searchParams.has('clothing'),
+});
 const selectedExampleIds = ref<number[]>([]);
 const isBriefDialogOpen = ref(false);
 const briefPeopleCount = ref<string>('not_set');
@@ -76,57 +105,161 @@ const briefNotes = ref<string>('');
 const briefRetouchPreference = ref<string>('not_set');
 const briefColorStyle = ref<string>('not_set');
 
-const applyFilters = (): void => {
+const currentPreset = computed(() => {
+    if (selectedPreset.value === 'custom') {
+        return null;
+    }
+
+    return props.presets.find((preset) => preset.slug === selectedPreset.value) ?? null;
+});
+
+const presetHelperText = computed(() => {
+    if (selectedPreset.value === 'custom') {
+        return 'Presets are quick starting points. You can still change filters below.';
+    }
+
+    if (currentPreset.value?.summary) {
+        return `${currentPreset.value.summary} Filters are pre-filled and can be adjusted below.`;
+    }
+
+    return 'This preset pre-fills filters. You can still change filters below.';
+});
+
+const buildQuery = (): Record<string, string> => {
     const query: Record<string, string> = {};
 
-    if (selectedMood.value !== 'all') {
+    if (selectedPreset.value !== 'custom') {
+        query.preset = selectedPreset.value;
+    }
+
+    if (explicitFilters.value.mood && selectedMood.value !== 'all') {
         query.mood = selectedMood.value;
     }
 
-    if (selectedSeason.value !== 'all') {
+    if (explicitFilters.value.season && selectedSeason.value !== 'all') {
         query.season = selectedSeason.value;
     }
 
-    if (selectedLocation.value !== 'all') {
+    if (explicitFilters.value.location && selectedLocation.value !== 'all') {
         query.location = selectedLocation.value;
     }
 
-    if (selectedClothing.value !== 'all') {
+    if (explicitFilters.value.clothing && selectedClothing.value !== 'all') {
         query.clothing = selectedClothing.value;
     }
 
-    router.visit(showCategory.url({ slug: props.category.slug }, { query }), {
+    return query;
+};
+
+const applyFilters = (): void => {
+    router.visit(showCategory.url({ slug: props.category.slug }, { query: buildQuery() }), {
         preserveState: true,
         preserveScroll: true,
         replace: true,
     });
 };
 
+const detachPresetOnManualChange = (): void => {
+    if (selectedPreset.value === 'custom') {
+        return;
+    }
+
+    selectedPreset.value = 'custom';
+    explicitFilters.value = {
+        mood: selectedMood.value !== 'all',
+        season: selectedSeason.value !== 'all',
+        location: selectedLocation.value !== 'all',
+        clothing: selectedClothing.value !== 'all',
+    };
+};
+
 const updateFilter = (key: 'mood' | 'season' | 'location' | 'clothing', value: string): void => {
     if (key === 'mood') {
         selectedMood.value = value;
+        explicitFilters.value.mood = value !== 'all';
     }
 
     if (key === 'season') {
         selectedSeason.value = value;
+        explicitFilters.value.season = value !== 'all';
     }
 
     if (key === 'location') {
         selectedLocation.value = value;
+        explicitFilters.value.location = value !== 'all';
     }
 
     if (key === 'clothing') {
         selectedClothing.value = value;
+        explicitFilters.value.clothing = value !== 'all';
+    }
+
+    detachPresetOnManualChange();
+    applyFilters();
+};
+
+const updatePreset = (value: string): void => {
+    selectedPreset.value = value;
+
+    if (value !== 'custom') {
+        const preset = props.presets.find((item) => item.slug === value);
+
+        if (preset) {
+            if (!explicitFilters.value.mood) {
+                selectedMood.value = preset.mood ?? 'all';
+            }
+
+            if (!explicitFilters.value.season) {
+                selectedSeason.value = preset.season_hint ?? 'all';
+            }
+
+            if (!explicitFilters.value.location) {
+                selectedLocation.value = preset.location_hint ?? 'all';
+            }
+
+            if (!explicitFilters.value.clothing) {
+                selectedClothing.value = preset.clothing_hint ?? 'all';
+            }
+        }
+    }
+
+    applyFilters();
+};
+
+const clearPreset = (): void => {
+    selectedPreset.value = 'custom';
+
+    if (!explicitFilters.value.mood) {
+        selectedMood.value = 'all';
+    }
+
+    if (!explicitFilters.value.season) {
+        selectedSeason.value = 'all';
+    }
+
+    if (!explicitFilters.value.location) {
+        selectedLocation.value = 'all';
+    }
+
+    if (!explicitFilters.value.clothing) {
+        selectedClothing.value = 'all';
     }
 
     applyFilters();
 };
 
 const resetFilters = (): void => {
+    selectedPreset.value = 'custom';
     selectedMood.value = 'all';
     selectedSeason.value = 'all';
     selectedLocation.value = 'all';
     selectedClothing.value = 'all';
+    explicitFilters.value = {
+        mood: false,
+        season: false,
+        location: false,
+        clothing: false,
+    };
 
     router.visit(showCategory.url({ slug: props.category.slug }), {
         preserveState: true,
@@ -213,6 +346,30 @@ const setBriefColorStyle = (value: string): void => {
                 <p class="text-sm text-zinc-500">{{ examples.length }} results</p>
             </div>
 
+            <div class="mt-8 rounded-2xl border border-zinc-200 bg-zinc-50/70 p-4">
+                <div class="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+                    <div class="space-y-2">
+                        <Label for="preset-selector">Example preset</Label>
+                        <Select :model-value="selectedPreset" @update:model-value="(value) => updatePreset(String(value))">
+                            <SelectTrigger id="preset-selector">
+                                <SelectValue placeholder="Custom" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="custom">Custom</SelectItem>
+                                <SelectItem v-for="preset in presets" :key="preset.id" :value="preset.slug">
+                                    {{ preset.title }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <p class="text-sm text-zinc-600">{{ presetHelperText }}</p>
+                    </div>
+
+                    <Button variant="outline" :disabled="selectedPreset === 'custom'" @click="clearPreset">
+                        Clear preset
+                    </Button>
+                </div>
+            </div>
+
             <div class="mt-8 grid gap-3 rounded-2xl border border-zinc-200 bg-zinc-50/70 p-4 md:grid-cols-6">
                 <Select :model-value="selectedMood" @update:model-value="(value) => updateFilter('mood', String(value))">
                     <SelectTrigger>
@@ -294,7 +451,7 @@ const setBriefColorStyle = (value: string): void => {
                                     v-model="briefNotes"
                                     rows="4"
                                     class="flex w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm shadow-xs outline-none ring-offset-white placeholder:text-zinc-400 focus-visible:ring-2 focus-visible:ring-zinc-900 disabled:cursor-not-allowed disabled:opacity-50"
-                                    placeholder="Что важно / что не хочу / стиль / реквизит / обработка"
+                                    placeholder="Important details, preferences, style, props, retouch notes"
                                 />
                             </div>
 

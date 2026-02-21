@@ -139,3 +139,92 @@ it('returns filter options only for current category active examples', function 
             ->where('filterOptions.locations', ['Park'])
             ->where('filterOptions.clothings', ['Neutral']));
 });
+
+it('applies preset values when preset is selected and filters are not explicit', function () {
+    $category = Category::factory()->create([
+        'slug' => 'family',
+        'is_active' => true,
+    ]);
+
+    Example::factory()->create([
+        'category_id' => $category->id,
+        'title' => 'Golden Hour Walk',
+        'slug' => 'golden-hour-walk',
+        'summary' => 'Warm evening session.',
+        'mood' => 'Warm',
+        'season_hint' => 'Summer',
+        'location_hint' => 'Park',
+        'clothing_hint' => 'Casual',
+        'is_active' => true,
+    ]);
+
+    Example::factory()->create([
+        'category_id' => $category->id,
+        'title' => 'Studio Mood',
+        'slug' => 'studio-mood',
+        'mood' => 'Cool',
+        'season_hint' => 'Winter',
+        'location_hint' => 'Studio',
+        'clothing_hint' => 'Formal',
+        'is_active' => true,
+    ]);
+
+    $this->get(route('categories.show', [
+        'slug' => $category->slug,
+        'preset' => 'golden-hour-walk',
+    ]))
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('CategoryShow')
+            ->where('activePreset.slug', 'golden-hour-walk')
+            ->where('activeFilters.mood', 'Warm')
+            ->where('activeFilters.season', 'Summer')
+            ->where('activeFilters.location', 'Park')
+            ->where('activeFilters.clothing', 'Casual')
+            ->has('presets', 2)
+            ->where('examples.0.title', 'Golden Hour Walk'));
+});
+
+it('lets explicit filter values override preset values', function () {
+    $category = Category::factory()->create([
+        'slug' => 'family',
+        'is_active' => true,
+    ]);
+
+    Example::factory()->create([
+        'category_id' => $category->id,
+        'title' => 'Golden Hour Walk',
+        'slug' => 'golden-hour-walk',
+        'mood' => 'Warm',
+        'season_hint' => 'Summer',
+        'location_hint' => 'Park',
+        'clothing_hint' => 'Casual',
+        'is_active' => true,
+    ]);
+
+    Example::factory()->create([
+        'category_id' => $category->id,
+        'title' => 'Manual Override',
+        'slug' => 'manual-override',
+        'mood' => 'Cool',
+        'season_hint' => 'Summer',
+        'location_hint' => 'Park',
+        'clothing_hint' => 'Casual',
+        'is_active' => true,
+    ]);
+
+    $this->get(route('categories.show', [
+        'slug' => $category->slug,
+        'preset' => 'golden-hour-walk',
+        'mood' => 'Cool',
+    ]))
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('CategoryShow')
+            ->where('activePreset.slug', 'golden-hour-walk')
+            ->where('activeFilters.mood', 'Cool')
+            ->where('activeFilters.season', 'Summer')
+            ->where('activeFilters.location', 'Park')
+            ->where('activeFilters.clothing', 'Casual')
+            ->where('examples.0.title', 'Manual Override'));
+});
