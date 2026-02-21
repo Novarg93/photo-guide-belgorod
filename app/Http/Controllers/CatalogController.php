@@ -40,6 +40,14 @@ class CatalogController extends Controller
         ]);
     }
 
+    public function copyright(): Response
+    {
+        return Inertia::render('Copyright', [
+            'metaTitle' => 'Copyright and Photo Sources',
+            'metaDescription' => 'Information about photo sources and content removal requests.',
+        ]);
+    }
+
     public function show(Request $request, string $slug): Response
     {
         $category = Category::query()
@@ -138,6 +146,7 @@ class CatalogController extends Controller
         ];
 
         $examples = $activeExamplesQuery
+            ->with(['latestActivePhoto'])
             ->select([
                 'id',
                 'title',
@@ -162,7 +171,7 @@ class CatalogController extends Controller
                 'location_hint' => $example->location_hint,
                 'season_hint' => $example->season_hint,
                 'clothing_hint' => $example->clothing_hint,
-                'image_url' => $example->image_url,
+                'image_url' => $example->cover_url ?? $example->image_url,
             ]);
 
         return Inertia::render('CategoryShow', [

@@ -49,6 +49,14 @@ it('shows category detail by slug', function () {
             ->where('category.description', 'Family sessions in Belgorod.'));
 });
 
+it('shows copyright page', function () {
+    $this->get(route('copyright'))
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Copyright')
+            ->where('metaTitle', 'Copyright and Photo Sources'));
+});
+
 it('returns not found for inactive category page', function () {
     $category = Category::factory()->create([
         'slug' => 'hidden-category',

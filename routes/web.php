@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [CatalogController::class, 'welcome'])->name('home');
 Route::get('/catalog', [CatalogController::class, 'index'])->name('catalog');
+Route::get('/copyright', [CatalogController::class, 'copyright'])->name('copyright');
 Route::get('/c/{slug}', [CatalogController::class, 'show'])->name('categories.show');
 Route::post('/briefs', [BriefController::class, 'store'])->name('brief.store');
 Route::get('/brief/{token}', [BriefController::class, 'show'])->name('brief.show');

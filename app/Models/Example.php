@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class Example extends Model
@@ -38,14 +41,34 @@ class Example extends Model
             return $this->cover_image;
         }
 
-        $keyword = $this->mood ?: $this->season_hint ?: 'portrait';
+        return Storage::disk('public')->url('photos/placeholder.svg');
+    }
 
-        return 'https://source.unsplash.com/600x800/?'.rawurlencode($keyword);
+    public function getCoverUrlAttribute(): ?string
+    {
+        $photo = $this->relationLoaded('latestActivePhoto')
+            ? $this->getRelation('latestActivePhoto')
+            : $this->latestActivePhoto()->first();
+
+        return $photo?->url;
     }
 
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function photos(): HasMany
+    {
+        return $this->hasMany(Photo::class);
+    }
+
+    public function latestActivePhoto(): HasOne
+    {
+        return $this->hasOne(Photo::class)
+            ->where('is_active', true)
+            ->whereNotNull('path')
+            ->latestOfMany();
     }
 
     protected static function booted(): void

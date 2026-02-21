@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Examples;
 use App\Filament\Resources\Examples\Pages\CreateExample;
 use App\Filament\Resources\Examples\Pages\EditExample;
 use App\Filament\Resources\Examples\Pages\ListExamples;
+use App\Filament\Resources\Examples\RelationManagers\PhotosRelationManager;
 use App\Filament\Resources\Examples\Schemas\ExampleForm;
 use App\Filament\Resources\Examples\Tables\ExamplesTable;
 use App\Models\Example;
@@ -33,7 +34,7 @@ class ExampleResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            PhotosRelationManager::class,
         ];
     }
 

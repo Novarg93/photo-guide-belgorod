@@ -2,6 +2,7 @@
 
 use App\Models\Category;
 use App\Models\Example;
+use App\Models\Photo;
 use Inertia\Testing\AssertableInertia as Assert;
 
 it('shows active examples on category page', function () {
@@ -227,4 +228,34 @@ it('lets explicit filter values override preset values', function () {
             ->where('activeFilters.location', 'Park')
             ->where('activeFilters.clothing', 'Casual')
             ->where('examples.0.title', 'Manual Override'));
+});
+
+it('prefers active photo url over fallback image url for category cards', function () {
+    $category = Category::factory()->create([
+        'slug' => 'family',
+        'is_active' => true,
+    ]);
+
+    $example = Example::factory()->create([
+        'category_id' => $category->id,
+        'title' => 'With Photo Cover',
+        'slug' => 'with-photo-cover',
+        'cover_image' => null,
+        'is_active' => true,
+    ]);
+
+    Photo::factory()->create([
+        'example_id' => $example->id,
+        'path' => 'photos/cover-test.svg',
+        'source_type' => 'stock',
+        'license' => 'stock',
+        'is_active' => true,
+    ]);
+
+    $this->get(route('categories.show', ['slug' => $category->slug]))
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('CategoryShow')
+            ->where('examples.0.title', 'With Photo Cover')
+            ->where('examples.0.image_url', fn (string $url): bool => str_contains($url, '/storage/photos/cover-test.svg')));
 });
