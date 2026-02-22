@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { Check } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -31,6 +31,17 @@ interface Category {
     description: string | null;
 }
 
+interface FilterOption {
+    key: string;
+    label: string;
+}
+
+interface FilterGroup {
+    key: string;
+    label: string;
+    options: FilterOption[];
+}
+
 interface ExampleItem {
     id: number;
     title: string;
@@ -39,65 +50,20 @@ interface ExampleItem {
     location_hint: string | null;
     season_hint: string | null;
     clothing_hint: string | null;
+    filter_option_labels: string[];
     image_url: string;
-}
-
-interface FilterOptions {
-    moods: string[];
-    seasons: string[];
-    locations: string[];
-    clothings: string[];
-}
-
-interface ActiveFilters {
-    mood: string | null;
-    season: string | null;
-    location: string | null;
-    clothing: string | null;
-}
-
-interface PresetItem {
-    id: number;
-    title: string;
-    slug: string;
-    summary: string | null;
-    mood: string | null;
-    season_hint: string | null;
-    location_hint: string | null;
-    clothing_hint: string | null;
-}
-
-interface ActivePreset {
-    slug: string;
-    title: string;
-    summary: string | null;
 }
 
 const props = defineProps<{
     category: Category;
     examples: ExampleItem[];
-    presets: PresetItem[];
-    activePreset: ActivePreset | null;
-    filterOptions: FilterOptions;
-    activeFilters: ActiveFilters;
+    filterGroups: FilterGroup[];
+    activeFilterOptionKeys: string[];
     metaTitle: string;
     metaDescription: string;
 }>();
 
-const page = usePage();
-const searchParams = new URLSearchParams(page.url.split('?')[1] ?? '');
-
-const selectedMood = ref<string>(props.activeFilters.mood ?? 'all');
-const selectedSeason = ref<string>(props.activeFilters.season ?? 'all');
-const selectedLocation = ref<string>(props.activeFilters.location ?? 'all');
-const selectedClothing = ref<string>(props.activeFilters.clothing ?? 'all');
-const selectedPreset = ref<string>(props.activePreset?.slug ?? 'custom');
-const explicitFilters = ref({
-    mood: searchParams.has('mood'),
-    season: searchParams.has('season'),
-    location: searchParams.has('location'),
-    clothing: searchParams.has('clothing'),
-});
+const selectedFilterOptionKeys = ref<string[]>([...props.activeFilterOptionKeys]);
 const selectedExampleIds = ref<number[]>([]);
 const isBriefDialogOpen = ref(false);
 const briefPeopleCount = ref<string>('not_set');
@@ -105,47 +71,11 @@ const briefNotes = ref<string>('');
 const briefRetouchPreference = ref<string>('not_set');
 const briefColorStyle = ref<string>('not_set');
 
-const currentPreset = computed(() => {
-    if (selectedPreset.value === 'custom') {
-        return null;
-    }
+const buildQuery = (): Record<string, string[]> => {
+    const query: Record<string, string[]> = {};
 
-    return props.presets.find((preset) => preset.slug === selectedPreset.value) ?? null;
-});
-
-const presetHelperText = computed(() => {
-    if (selectedPreset.value === 'custom') {
-        return 'Presets are quick starting points. You can still change filters below.';
-    }
-
-    if (currentPreset.value?.summary) {
-        return `${currentPreset.value.summary} Filters are pre-filled and can be adjusted below.`;
-    }
-
-    return 'This preset pre-fills filters. You can still change filters below.';
-});
-
-const buildQuery = (): Record<string, string> => {
-    const query: Record<string, string> = {};
-
-    if (selectedPreset.value !== 'custom') {
-        query.preset = selectedPreset.value;
-    }
-
-    if (explicitFilters.value.mood && selectedMood.value !== 'all') {
-        query.mood = selectedMood.value;
-    }
-
-    if (explicitFilters.value.season && selectedSeason.value !== 'all') {
-        query.season = selectedSeason.value;
-    }
-
-    if (explicitFilters.value.location && selectedLocation.value !== 'all') {
-        query.location = selectedLocation.value;
-    }
-
-    if (explicitFilters.value.clothing && selectedClothing.value !== 'all') {
-        query.clothing = selectedClothing.value;
+    if (selectedFilterOptionKeys.value.length > 0) {
+        query.filters = selectedFilterOptionKeys.value;
     }
 
     return query;
@@ -159,107 +89,22 @@ const applyFilters = (): void => {
     });
 };
 
-const detachPresetOnManualChange = (): void => {
-    if (selectedPreset.value === 'custom') {
-        return;
-    }
-
-    selectedPreset.value = 'custom';
-    explicitFilters.value = {
-        mood: selectedMood.value !== 'all',
-        season: selectedSeason.value !== 'all',
-        location: selectedLocation.value !== 'all',
-        clothing: selectedClothing.value !== 'all',
-    };
-};
-
-const updateFilter = (key: 'mood' | 'season' | 'location' | 'clothing', value: string): void => {
-    if (key === 'mood') {
-        selectedMood.value = value;
-        explicitFilters.value.mood = value !== 'all';
-    }
-
-    if (key === 'season') {
-        selectedSeason.value = value;
-        explicitFilters.value.season = value !== 'all';
-    }
-
-    if (key === 'location') {
-        selectedLocation.value = value;
-        explicitFilters.value.location = value !== 'all';
-    }
-
-    if (key === 'clothing') {
-        selectedClothing.value = value;
-        explicitFilters.value.clothing = value !== 'all';
-    }
-
-    detachPresetOnManualChange();
-    applyFilters();
-};
-
-const updatePreset = (value: string): void => {
-    selectedPreset.value = value;
-
-    if (value !== 'custom') {
-        const preset = props.presets.find((item) => item.slug === value);
-
-        if (preset) {
-            if (!explicitFilters.value.mood) {
-                selectedMood.value = preset.mood ?? 'all';
-            }
-
-            if (!explicitFilters.value.season) {
-                selectedSeason.value = preset.season_hint ?? 'all';
-            }
-
-            if (!explicitFilters.value.location) {
-                selectedLocation.value = preset.location_hint ?? 'all';
-            }
-
-            if (!explicitFilters.value.clothing) {
-                selectedClothing.value = preset.clothing_hint ?? 'all';
-            }
-        }
+const toggleFilter = (optionKey: string): void => {
+    if (selectedFilterOptionKeys.value.includes(optionKey)) {
+        selectedFilterOptionKeys.value = selectedFilterOptionKeys.value.filter((key) => key !== optionKey);
+    } else {
+        selectedFilterOptionKeys.value = [...selectedFilterOptionKeys.value, optionKey];
     }
 
     applyFilters();
 };
 
-const clearPreset = (): void => {
-    selectedPreset.value = 'custom';
-
-    if (!explicitFilters.value.mood) {
-        selectedMood.value = 'all';
-    }
-
-    if (!explicitFilters.value.season) {
-        selectedSeason.value = 'all';
-    }
-
-    if (!explicitFilters.value.location) {
-        selectedLocation.value = 'all';
-    }
-
-    if (!explicitFilters.value.clothing) {
-        selectedClothing.value = 'all';
-    }
-
-    applyFilters();
+const isFilterSelected = (optionKey: string): boolean => {
+    return selectedFilterOptionKeys.value.includes(optionKey);
 };
 
 const resetFilters = (): void => {
-    selectedPreset.value = 'custom';
-    selectedMood.value = 'all';
-    selectedSeason.value = 'all';
-    selectedLocation.value = 'all';
-    selectedClothing.value = 'all';
-    explicitFilters.value = {
-        mood: false,
-        season: false,
-        location: false,
-        clothing: false,
-    };
+    selectedFilterOptionKeys.value = [];
 
     router.visit(showCategory.url({ slug: props.category.slug }), {
         preserveState: true,
@@ -269,7 +114,6 @@ const resetFilters = (): void => {
 };
 
 const createBrief = (): void => {
-    const toNullable = (value: string): string | null => (value === 'all' ? null : value);
     const toNullableBriefValue = (value: string): string | null => (value === 'not_set' ? null : value);
     const preparedNotes = briefNotes.value.trim();
 
@@ -277,10 +121,10 @@ const createBrief = (): void => {
         '/briefs',
         {
             category_slug: props.category.slug,
-            mood: toNullable(selectedMood.value),
-            season: toNullable(selectedSeason.value),
-            location: toNullable(selectedLocation.value),
-            clothing: toNullable(selectedClothing.value),
+            mood: null,
+            season: null,
+            location: null,
+            clothing: null,
             people_count: toNullableBriefValue(briefPeopleCount.value),
             notes: preparedNotes.length > 0 ? preparedNotes : null,
             retouch_preference: toNullableBriefValue(briefRetouchPreference.value),
@@ -347,71 +191,41 @@ const setBriefColorStyle = (value: string): void => {
             </div>
 
             <div class="mt-8 rounded-2xl border border-zinc-200 bg-zinc-50/70 p-4">
-                <div class="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
-                    <div class="space-y-2">
-                        <Label for="preset-selector">Example preset</Label>
-                        <Select :model-value="selectedPreset" @update:model-value="(value) => updatePreset(String(value))">
-                            <SelectTrigger id="preset-selector">
-                                <SelectValue placeholder="Custom" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="custom">Custom</SelectItem>
-                                <SelectItem v-for="preset in presets" :key="preset.id" :value="preset.slug">
-                                    {{ preset.title }}
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <p class="text-sm text-zinc-600">{{ presetHelperText }}</p>
+                <div class="flex flex-wrap items-start justify-between gap-4">
+                    <div class="space-y-3">
+                        <h2 class="text-sm font-semibold uppercase tracking-wide text-zinc-500">Filters</h2>
+
+                        <div v-if="filterGroups.length > 0" class="space-y-3">
+                            <div v-for="group in filterGroups" :key="group.key" class="space-y-2">
+                                <p class="text-sm font-medium text-zinc-800">{{ group.label }}</p>
+
+                                <div class="flex flex-wrap gap-2">
+                                    <button
+                                        v-for="option in group.options"
+                                        :key="option.key"
+                                        type="button"
+                                        class="rounded-full border px-3 py-1.5 text-sm transition"
+                                        :class="[
+                                            isFilterSelected(option.key)
+                                                ? 'border-zinc-900 bg-zinc-900 text-white'
+                                                : 'border-zinc-300 bg-white text-zinc-700 hover:border-zinc-500',
+                                        ]"
+                                        @click="toggleFilter(option.key)"
+                                    >
+                                        {{ option.label }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p v-else class="text-sm text-zinc-600">No filter groups configured for this category yet.</p>
                     </div>
 
-                    <Button variant="outline" :disabled="selectedPreset === 'custom'" @click="clearPreset">
-                        Clear preset
-                    </Button>
+                    <Button variant="outline" @click="resetFilters">Reset</Button>
                 </div>
             </div>
 
-            <div class="mt-8 grid gap-3 rounded-2xl border border-zinc-200 bg-zinc-50/70 p-4 md:grid-cols-6">
-                <Select :model-value="selectedMood" @update:model-value="(value) => updateFilter('mood', String(value))">
-                    <SelectTrigger>
-                        <SelectValue placeholder="Mood" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">All moods</SelectItem>
-                        <SelectItem v-for="option in filterOptions.moods" :key="`mood-${option}`" :value="option">{{ option }}</SelectItem>
-                    </SelectContent>
-                </Select>
-
-                <Select :model-value="selectedSeason" @update:model-value="(value) => updateFilter('season', String(value))">
-                    <SelectTrigger>
-                        <SelectValue placeholder="Season" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">All seasons</SelectItem>
-                        <SelectItem v-for="option in filterOptions.seasons" :key="`season-${option}`" :value="option">{{ option }}</SelectItem>
-                    </SelectContent>
-                </Select>
-
-                <Select :model-value="selectedLocation" @update:model-value="(value) => updateFilter('location', String(value))">
-                    <SelectTrigger>
-                        <SelectValue placeholder="Location" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">All locations</SelectItem>
-                        <SelectItem v-for="option in filterOptions.locations" :key="`location-${option}`" :value="option">{{ option }}</SelectItem>
-                    </SelectContent>
-                </Select>
-
-                <Select :model-value="selectedClothing" @update:model-value="(value) => updateFilter('clothing', String(value))">
-                    <SelectTrigger>
-                        <SelectValue placeholder="Clothing" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">All clothing</SelectItem>
-                        <SelectItem v-for="option in filterOptions.clothings" :key="`clothing-${option}`" :value="option">{{ option }}</SelectItem>
-                    </SelectContent>
-                </Select>
-
-                <Button variant="outline" @click="resetFilters">Reset</Button>
+            <div class="mt-4 flex justify-end">
                 <Dialog v-model:open="isBriefDialogOpen">
                     <DialogTrigger as-child>
                         <Button>Create brief</Button>
@@ -526,10 +340,13 @@ const setBriefColorStyle = (value: string): void => {
 
                     <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/85 via-black/35 to-transparent"></div>
 
-                    <div class="absolute left-3 top-3 flex flex-wrap gap-1.5">
-                        <Badge v-if="example.mood" class="bg-white/90 text-zinc-900">{{ example.mood }}</Badge>
-                        <Badge v-if="example.location_hint" variant="secondary" class="bg-white/80 text-zinc-900">
-                            {{ example.location_hint }}
+                    <div class="absolute left-3 top-3 flex max-w-[80%] flex-wrap gap-1.5">
+                        <Badge
+                            v-for="label in example.filter_option_labels.slice(0, 3)"
+                            :key="`${example.id}-${label}`"
+                            class="bg-white/90 text-zinc-900"
+                        >
+                            {{ label }}
                         </Badge>
                     </div>
 

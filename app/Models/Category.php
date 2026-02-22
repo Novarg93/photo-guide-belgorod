@@ -16,6 +16,7 @@ class Category extends Model
         'name',
         'slug',
         'description',
+        'filter_groups',
         'is_active',
         'seo_title',
         'seo_description',
@@ -24,6 +25,7 @@ class Category extends Model
     protected function casts(): array
     {
         return [
+            'filter_groups' => 'array',
             'is_active' => 'boolean',
         ];
     }

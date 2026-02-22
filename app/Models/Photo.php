@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\CategoryFilterSchema;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,6 +17,7 @@ class Photo extends Model
     protected $fillable = [
         'title',
         'category_id',
+        'filter_option_keys',
         'example_id',
         'path',
         'source_type',
@@ -29,6 +31,7 @@ class Photo extends Model
     protected function casts(): array
     {
         return [
+            'filter_option_keys' => 'array',
             'is_active' => 'boolean',
         ];
     }
@@ -53,6 +56,15 @@ class Photo extends Model
                     $photo->category_id = $exampleCategoryId;
                 }
             }
+
+            $categoryFilterGroups = Category::query()
+                ->whereKey($photo->category_id)
+                ->first()?->filter_groups;
+
+            $photo->filter_option_keys = CategoryFilterSchema::filterSelected(
+                $categoryFilterGroups,
+                $photo->filter_option_keys,
+            );
 
             $photo->title = Str::limit(trim((string) $photo->title), 255, '');
         });

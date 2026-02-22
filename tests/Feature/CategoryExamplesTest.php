@@ -32,10 +32,7 @@ it('shows active examples on category page', function () {
             ->component('CategoryShow')
             ->has('examples', 1)
             ->where('examples.0.title', 'Golden Hour Walk')
-            ->where('activeFilters.mood', null)
-            ->where('activeFilters.season', null)
-            ->where('activeFilters.location', null)
-            ->where('activeFilters.clothing', null));
+            ->where('activeFilterOptionKeys', []));
 });
 
 it('belongs examples to their category', function () {
@@ -59,175 +56,89 @@ it('auto-generates example slug on create when it is not provided', function () 
     expect($example->slug)->toBe('sunset-portrait-set');
 });
 
-it('filters examples by query params and returns active filters', function () {
-    $category = Category::factory()->create([
-        'slug' => 'family',
-        'is_active' => true,
-    ]);
-
-    Example::factory()->create([
-        'category_id' => $category->id,
-        'title' => 'Filtered Match',
-        'slug' => 'filtered-match',
-        'mood' => 'Warm',
-        'season_hint' => 'Autumn',
-        'location_hint' => 'City center',
-        'clothing_hint' => 'Casual',
-        'is_active' => true,
-    ]);
-
-    Example::factory()->create([
-        'category_id' => $category->id,
-        'title' => 'Different Example',
-        'slug' => 'different-example',
-        'mood' => 'Bold',
-        'season_hint' => 'Winter',
-        'location_hint' => 'Studio loft',
-        'clothing_hint' => 'Formal',
-        'is_active' => true,
-    ]);
-
-    $this->get(route('categories.show', [
-        'slug' => $category->slug,
-        'mood' => 'Warm',
-        'season' => 'Autumn',
-        'location' => 'City center',
-        'clothing' => 'Casual',
-    ]))
-        ->assertSuccessful()
-        ->assertInertia(fn (Assert $page) => $page
-            ->component('CategoryShow')
-            ->has('examples', 1)
-            ->where('examples.0.title', 'Filtered Match')
-            ->where('activeFilters.mood', 'Warm')
-            ->where('activeFilters.season', 'Autumn')
-            ->where('activeFilters.location', 'City center')
-            ->where('activeFilters.clothing', 'Casual'));
-});
-
-it('returns filter options only for current category active examples', function () {
+it('returns category filter groups to frontend', function () {
     $category = Category::factory()->create([
         'slug' => 'wedding',
         'is_active' => true,
+        'filter_groups' => [
+            [
+                'name' => 'Moods',
+                'options' => [
+                    ['name' => 'Calm'],
+                    ['name' => 'Bold'],
+                ],
+            ],
+        ],
     ]);
 
     Example::factory()->create([
         'category_id' => $category->id,
         'slug' => 'option-a',
-        'mood' => 'Calm',
-        'season_hint' => 'Spring',
-        'location_hint' => 'Park',
-        'clothing_hint' => 'Neutral',
         'is_active' => true,
-    ]);
-
-    Example::factory()->create([
-        'category_id' => $category->id,
-        'slug' => 'option-b',
-        'mood' => 'Bold',
-        'season_hint' => 'Winter',
-        'location_hint' => 'Studio',
-        'clothing_hint' => 'Classic',
-        'is_active' => false,
     ]);
 
     $this->get(route('categories.show', ['slug' => $category->slug]))
         ->assertSuccessful()
         ->assertInertia(fn (Assert $page) => $page
             ->component('CategoryShow')
-            ->where('filterOptions.moods', ['Calm'])
-            ->where('filterOptions.seasons', ['Spring'])
-            ->where('filterOptions.locations', ['Park'])
-            ->where('filterOptions.clothings', ['Neutral']));
+            ->where('filterGroups.0.label', 'Moods')
+            ->where('filterGroups.0.options.0.label', 'Calm')
+            ->where('filterGroups.0.options.1.label', 'Bold'));
 });
 
-it('applies preset values when preset is selected and filters are not explicit', function () {
+it('filters examples by selected photo filter options', function () {
     $category = Category::factory()->create([
         'slug' => 'family',
         'is_active' => true,
+        'filter_groups' => [
+            [
+                'name' => 'Moods',
+                'options' => [
+                    ['name' => 'Warm'],
+                    ['name' => 'Cool'],
+                ],
+            ],
+        ],
     ]);
 
-    Example::factory()->create([
+    $warmExample = Example::factory()->create([
         'category_id' => $category->id,
-        'title' => 'Golden Hour Walk',
-        'slug' => 'golden-hour-walk',
-        'summary' => 'Warm evening session.',
-        'mood' => 'Warm',
-        'season_hint' => 'Summer',
-        'location_hint' => 'Park',
-        'clothing_hint' => 'Casual',
+        'title' => 'Warm Match',
+        'slug' => 'warm-match',
         'is_active' => true,
     ]);
 
-    Example::factory()->create([
+    $coolExample = Example::factory()->create([
         'category_id' => $category->id,
-        'title' => 'Studio Mood',
-        'slug' => 'studio-mood',
-        'mood' => 'Cool',
-        'season_hint' => 'Winter',
-        'location_hint' => 'Studio',
-        'clothing_hint' => 'Formal',
+        'title' => 'Cool Match',
+        'slug' => 'cool-match',
+        'is_active' => true,
+    ]);
+
+    Photo::factory()->create([
+        'category_id' => $category->id,
+        'example_id' => $warmExample->id,
+        'filter_option_keys' => ['moods.warm'],
+        'is_active' => true,
+    ]);
+
+    Photo::factory()->create([
+        'category_id' => $category->id,
+        'example_id' => $coolExample->id,
+        'filter_option_keys' => ['moods.cool'],
         'is_active' => true,
     ]);
 
     $this->get(route('categories.show', [
         'slug' => $category->slug,
-        'preset' => 'golden-hour-walk',
+        'filters' => ['moods.warm'],
     ]))
         ->assertSuccessful()
         ->assertInertia(fn (Assert $page) => $page
             ->component('CategoryShow')
-            ->where('activePreset.slug', 'golden-hour-walk')
-            ->where('activeFilters.mood', 'Warm')
-            ->where('activeFilters.season', 'Summer')
-            ->where('activeFilters.location', 'Park')
-            ->where('activeFilters.clothing', 'Casual')
-            ->has('presets', 2)
-            ->where('examples.0.title', 'Golden Hour Walk'));
-});
-
-it('lets explicit filter values override preset values', function () {
-    $category = Category::factory()->create([
-        'slug' => 'family',
-        'is_active' => true,
-    ]);
-
-    Example::factory()->create([
-        'category_id' => $category->id,
-        'title' => 'Golden Hour Walk',
-        'slug' => 'golden-hour-walk',
-        'mood' => 'Warm',
-        'season_hint' => 'Summer',
-        'location_hint' => 'Park',
-        'clothing_hint' => 'Casual',
-        'is_active' => true,
-    ]);
-
-    Example::factory()->create([
-        'category_id' => $category->id,
-        'title' => 'Manual Override',
-        'slug' => 'manual-override',
-        'mood' => 'Cool',
-        'season_hint' => 'Summer',
-        'location_hint' => 'Park',
-        'clothing_hint' => 'Casual',
-        'is_active' => true,
-    ]);
-
-    $this->get(route('categories.show', [
-        'slug' => $category->slug,
-        'preset' => 'golden-hour-walk',
-        'mood' => 'Cool',
-    ]))
-        ->assertSuccessful()
-        ->assertInertia(fn (Assert $page) => $page
-            ->component('CategoryShow')
-            ->where('activePreset.slug', 'golden-hour-walk')
-            ->where('activeFilters.mood', 'Cool')
-            ->where('activeFilters.season', 'Summer')
-            ->where('activeFilters.location', 'Park')
-            ->where('activeFilters.clothing', 'Casual')
-            ->where('examples.0.title', 'Manual Override'));
+            ->has('examples', 1)
+            ->where('examples.0.title', 'Warm Match')
+            ->where('activeFilterOptionKeys', ['moods.warm']));
 });
 
 it('prefers active photo url over fallback image url for category cards', function () {

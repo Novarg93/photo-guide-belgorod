@@ -2,7 +2,10 @@
 
 namespace App\Filament\Resources\Photos\Schemas;
 
+use App\Models\Category;
 use App\Models\Example;
+use App\Support\CategoryFilterSchema;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -28,6 +31,9 @@ class PhotoForm
                     ->preload()
                     ->required()
                     ->live()
+                    ->afterStateUpdated(function (Set $set): void {
+                        $set('filter_option_keys', []);
+                    })
                     ->disabled(fn (Get $get): bool => filled($get('example_id')))
                     ->dehydrated()
                     ->rule(function (Get $get): \Closure {
@@ -64,8 +70,48 @@ class PhotoForm
 
                         if ($exampleCategoryId !== null) {
                             $set('category_id', (string) $exampleCategoryId);
+                            $set('filter_option_keys', []);
                         }
                     }),
+                CheckboxList::make('filter_option_keys')
+                    ->label('Category filter options')
+                    ->helperText('Select the filter options this photo belongs to.')
+                    ->columns(2)
+                    ->searchable()
+                    ->visible(fn (Get $get): bool => filled($get('category_id')))
+                    ->options(function (Get $get): array {
+                        $categoryId = $get('category_id');
+
+                        if (blank($categoryId)) {
+                            return [];
+                        }
+
+                        $category = Category::query()
+                            ->select(['id', 'filter_groups'])
+                            ->find($categoryId);
+
+                        return CategoryFilterSchema::flattenOptions($category?->filter_groups);
+                    })
+                    ->rule(function (Get $get): \Closure {
+                        return function (string $attribute, mixed $value, \Closure $fail) use ($get): void {
+                            $categoryId = $get('category_id');
+
+                            if (blank($categoryId)) {
+                                return;
+                            }
+
+                            $category = Category::query()
+                                ->select(['id', 'filter_groups'])
+                                ->find($categoryId);
+
+                            $sanitized = CategoryFilterSchema::filterSelected($category?->filter_groups, $value);
+
+                            if (count($sanitized) !== count(is_array($value) ? $value : [])) {
+                                $fail('Selected filter options must belong to the selected category.');
+                            }
+                        };
+                    })
+                    ->columnSpanFull(),
                 FileUpload::make('path')
                     ->disk('public')
                     ->directory('photos')

@@ -67,3 +67,32 @@ it('allows standalone photo without example when category is set', function () {
     expect($photo->example_id)->toBeNull()
         ->and($photo->category_id)->toBe($category->id);
 });
+
+it('keeps only allowed filter options for selected category', function () {
+    $category = Category::factory()->create([
+        'filter_groups' => [
+            [
+                'name' => 'Moods',
+                'options' => [
+                    ['name' => 'Bold'],
+                ],
+            ],
+        ],
+    ]);
+
+    $photo = Photo::query()->create([
+        'category_id' => $category->id,
+        'example_id' => null,
+        'title' => 'Filtered photo',
+        'path' => null,
+        'source_type' => 'own',
+        'source_url' => null,
+        'author_name' => null,
+        'license' => 'own',
+        'permission_note' => null,
+        'filter_option_keys' => ['moods.bold', 'moods.unknown'],
+        'is_active' => true,
+    ]);
+
+    expect($photo->filter_option_keys)->toBe(['moods.bold']);
+});

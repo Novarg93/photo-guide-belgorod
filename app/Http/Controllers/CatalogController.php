@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Support\CategoryFilterSchema;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -21,7 +22,7 @@ class CatalogController extends Controller
     public function index(): Response
     {
         $categories = Category::query()
-            ->select(['id', 'name', 'slug', 'description'])
+            ->select(['id', 'name', 'slug', 'description', 'filter_groups'])
             ->where('is_active', true)
             ->orderBy('name')
             ->get()
@@ -30,6 +31,7 @@ class CatalogController extends Controller
                 'name' => $category->name,
                 'slug' => $category->slug,
                 'description' => $category->description,
+                'filter_groups' => CategoryFilterSchema::normalize($category->filter_groups),
                 'url' => route('categories.show', ['slug' => $category->slug]),
             ]);
 
@@ -55,98 +57,21 @@ class CatalogController extends Controller
             ->where('is_active', true)
             ->firstOrFail();
 
-        $presets = $category->examples()
-            ->select([
-                'id',
-                'title',
-                'slug',
-                'summary',
-                'mood',
-                'season_hint',
-                'location_hint',
-                'clothing_hint',
-            ])
+        $filterGroups = CategoryFilterSchema::normalize($category->filter_groups);
+        $filterLabelsByKey = CategoryFilterSchema::flattenOptions($category->filter_groups);
+        $activeFilterOptionKeys = CategoryFilterSchema::filterSelected(
+            $category->filter_groups,
+            $request->query('filters', []),
+        );
+
+        $examples = $category->examples()
             ->where('is_active', true)
-            ->orderBy('title')
-            ->get();
-
-        $activePreset = null;
-        $presetSlug = $request->filled('preset') ? (string) $request->query('preset') : null;
-
-        if ($presetSlug !== null) {
-            $activePreset = $presets->firstWhere('slug', $presetSlug);
-        }
-
-        $queryFilters = [
-            'mood' => $request->filled('mood') ? (string) $request->query('mood') : null,
-            'season' => $request->filled('season') ? (string) $request->query('season') : null,
-            'location' => $request->filled('location') ? (string) $request->query('location') : null,
-            'clothing' => $request->filled('clothing') ? (string) $request->query('clothing') : null,
-        ];
-
-        $explicitFilters = [
-            'mood' => $request->filled('mood'),
-            'season' => $request->filled('season'),
-            'location' => $request->filled('location'),
-            'clothing' => $request->filled('clothing'),
-        ];
-
-        $activeFilters = $queryFilters;
-
-        if ($activePreset !== null) {
-            if (! $explicitFilters['mood']) {
-                $activeFilters['mood'] = $activePreset->mood;
-            }
-
-            if (! $explicitFilters['season']) {
-                $activeFilters['season'] = $activePreset->season_hint;
-            }
-
-            if (! $explicitFilters['location']) {
-                $activeFilters['location'] = $activePreset->location_hint;
-            }
-
-            if (! $explicitFilters['clothing']) {
-                $activeFilters['clothing'] = $activePreset->clothing_hint;
-            }
-        }
-
-        $activeExamplesQuery = $category->examples()
-            ->where('is_active', true);
-
-        $filterOptions = [
-            'moods' => (clone $activeExamplesQuery)
-                ->whereNotNull('mood')
-                ->distinct()
-                ->orderBy('mood')
-                ->pluck('mood')
-                ->values()
-                ->all(),
-            'seasons' => (clone $activeExamplesQuery)
-                ->whereNotNull('season_hint')
-                ->distinct()
-                ->orderBy('season_hint')
-                ->pluck('season_hint')
-                ->values()
-                ->all(),
-            'locations' => (clone $activeExamplesQuery)
-                ->whereNotNull('location_hint')
-                ->distinct()
-                ->orderBy('location_hint')
-                ->pluck('location_hint')
-                ->values()
-                ->all(),
-            'clothings' => (clone $activeExamplesQuery)
-                ->whereNotNull('clothing_hint')
-                ->distinct()
-                ->orderBy('clothing_hint')
-                ->pluck('clothing_hint')
-                ->values()
-                ->all(),
-        ];
-
-        $examples = $activeExamplesQuery
-            ->with(['latestActivePhoto'])
+            ->with([
+                'latestActivePhoto',
+                'photos' => fn ($query) => $query
+                    ->select(['id', 'example_id', 'filter_option_keys'])
+                    ->where('is_active', true),
+            ])
             ->select([
                 'id',
                 'title',
@@ -157,10 +82,18 @@ class CatalogController extends Controller
                 'clothing_hint',
                 'cover_image',
             ])
-            ->when($activeFilters['mood'], fn (Builder $query, string $value) => $query->where('mood', $value))
-            ->when($activeFilters['season'], fn (Builder $query, string $value) => $query->where('season_hint', $value))
-            ->when($activeFilters['location'], fn (Builder $query, string $value) => $query->where('location_hint', $value))
-            ->when($activeFilters['clothing'], fn (Builder $query, string $value) => $query->where('clothing_hint', $value))
+            ->when(
+                $activeFilterOptionKeys !== [],
+                function (Builder $query) use ($activeFilterOptionKeys): void {
+                    $query->whereHas('photos', function (Builder $photoQuery) use ($activeFilterOptionKeys): void {
+                        $photoQuery->where('is_active', true);
+
+                        foreach ($activeFilterOptionKeys as $optionKey) {
+                            $photoQuery->whereJsonContains('filter_option_keys', $optionKey);
+                        }
+                    });
+                },
+            )
             ->orderBy('title')
             ->get()
             ->map(fn ($example): array => [
@@ -171,6 +104,12 @@ class CatalogController extends Controller
                 'location_hint' => $example->location_hint,
                 'season_hint' => $example->season_hint,
                 'clothing_hint' => $example->clothing_hint,
+                'filter_option_labels' => $example->photos
+                    ->flatMap(fn ($photo): array => CategoryFilterSchema::filterSelected($category->filter_groups, $photo->filter_option_keys))
+                    ->unique()
+                    ->values()
+                    ->map(fn (string $optionKey): string => $filterLabelsByKey[$optionKey] ?? $optionKey)
+                    ->all(),
                 'image_url' => $example->cover_url ?? $example->image_url,
             ]);
 
@@ -181,25 +120,8 @@ class CatalogController extends Controller
                 'description' => $category->description,
             ],
             'examples' => $examples,
-            'presets' => $presets->map(fn ($preset): array => [
-                'id' => $preset->id,
-                'title' => $preset->title,
-                'slug' => $preset->slug,
-                'summary' => $preset->summary,
-                'mood' => $preset->mood,
-                'season_hint' => $preset->season_hint,
-                'location_hint' => $preset->location_hint,
-                'clothing_hint' => $preset->clothing_hint,
-            ]),
-            'activePreset' => $activePreset !== null
-                ? [
-                    'slug' => $activePreset->slug,
-                    'title' => $activePreset->title,
-                    'summary' => $activePreset->summary,
-                ]
-                : null,
-            'filterOptions' => $filterOptions,
-            'activeFilters' => $activeFilters,
+            'filterGroups' => $filterGroups,
+            'activeFilterOptionKeys' => $activeFilterOptionKeys,
             'metaTitle' => $category->seo_title ?: $category->name,
             'metaDescription' => $category->seo_description ?: ($category->description ?: 'Photo session category page.'),
         ]);

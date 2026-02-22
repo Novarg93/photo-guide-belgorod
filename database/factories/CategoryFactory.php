@@ -23,6 +23,24 @@ class CategoryFactory extends Factory
             'name' => Str::title($name),
             'slug' => Str::slug($name),
             'description' => fake()->sentence(),
+            'filter_groups' => [
+                [
+                    'name' => 'Mood',
+                    'options' => [
+                        ['name' => 'Calm'],
+                        ['name' => 'Bold'],
+                        ['name' => 'Warm'],
+                    ],
+                ],
+                [
+                    'name' => 'Location',
+                    'options' => [
+                        ['name' => 'City'],
+                        ['name' => 'Park'],
+                        ['name' => 'Studio'],
+                    ],
+                ],
+            ],
             'is_active' => true,
             'seo_title' => fake()->sentence(4),
             'seo_description' => fake()->sentence(8),

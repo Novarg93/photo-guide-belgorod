@@ -31,6 +31,7 @@ class PhotoFactory extends Factory
         return [
             'title' => $title,
             'category_id' => Category::factory(),
+            'filter_option_keys' => [],
             'example_id' => Example::factory(),
             'path' => $path,
             'source_type' => fake()->randomElement(['own', 'permission', 'stock']),

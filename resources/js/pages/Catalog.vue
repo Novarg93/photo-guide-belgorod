@@ -8,6 +8,11 @@ interface CategoryCard {
     name: string;
     slug: string;
     description: string | null;
+    filter_groups: {
+        key: string;
+        label: string;
+        options: { key: string; label: string }[];
+    }[];
     url: string;
 }
 
@@ -48,6 +53,17 @@ defineProps<{
                     <p class="mt-2 text-sm leading-relaxed text-zinc-600">
                         {{ category.description || 'Category description will be added later.' }}
                     </p>
+
+                    <div v-if="category.filter_groups.length > 0" class="mt-4 space-y-2">
+                        <div v-for="group in category.filter_groups" :key="group.key" class="space-y-1">
+                            <p class="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                                {{ group.label }}
+                            </p>
+                            <p class="text-xs text-zinc-600">
+                                {{ group.options.map((option) => option.label).join(', ') }}
+                            </p>
+                        </div>
+                    </div>
                 </Link>
             </div>
         </section>

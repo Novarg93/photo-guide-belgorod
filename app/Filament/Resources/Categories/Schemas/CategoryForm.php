@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Categories\Schemas;
 
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -37,6 +38,35 @@ class CategoryForm
                 Textarea::make('description')
                     ->rows(4)
                     ->columnSpanFull(),
+                Repeater::make('filter_groups')
+                    ->label('Filter groups')
+                    ->columnSpanFull()
+                    ->default([])
+                    ->collapsible()
+                    ->cloneable()
+                    ->reorderableWithButtons()
+                    ->addActionLabel('Add filter group')
+                    ->schema([
+                        TextInput::make('name')
+                            ->label('Group title')
+                            ->required()
+                            ->maxLength(255),
+                        Repeater::make('options')
+                            ->label('Filter options')
+                            ->required()
+                            ->minItems(1)
+                            ->default([])
+                            ->collapsible()
+                            ->cloneable()
+                            ->reorderableWithButtons()
+                            ->addActionLabel('Add option')
+                            ->schema([
+                                TextInput::make('name')
+                                    ->label('Option title')
+                                    ->required()
+                                    ->maxLength(255),
+                            ]),
+                    ]),
                 TextInput::make('seo_title')
                     ->maxLength(255),
                 Textarea::make('seo_description')
