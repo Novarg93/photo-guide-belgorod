@@ -25,6 +25,7 @@ class ExampleFactory extends Factory
             'title' => $title,
             'slug' => Str::slug($title),
             'summary' => fake()->sentence(14),
+            'filter_option_keys' => [],
             'mood' => fake()->randomElement(['Romantic', 'Natural', 'Editorial', 'Warm']),
             'location_hint' => fake()->randomElement(['City center', 'Pine park', 'Studio loft', 'Riverside']),
             'season_hint' => fake()->randomElement(['Spring', 'Summer', 'Autumn', 'Winter']),

@@ -32,11 +32,11 @@ class PhotoSeeder extends Seeder
                 $category->id => CategoryFilterSchema::allowedOptionKeys($category->filter_groups),
             ]);
 
-        Example::query()->select(['id', 'category_id'])->get()->each(function (Example $example) use ($activeSources, $filterKeysByCategory, $placeholderPath): void {
+        Example::query()->select(['id', 'category_id', 'filter_option_keys'])->get()->each(function (Example $example) use ($activeSources, $filterKeysByCategory, $placeholderPath): void {
             $allowedFilterKeys = $filterKeysByCategory->get($example->category_id, []);
-            $selectedFilterKeys = [];
+            $selectedFilterKeys = is_array($example->filter_option_keys) ? $example->filter_option_keys : [];
 
-            if ($allowedFilterKeys !== []) {
+            if ($selectedFilterKeys === [] && $allowedFilterKeys !== []) {
                 shuffle($allowedFilterKeys);
                 $selectedFilterKeys = Arr::take($allowedFilterKeys, random_int(1, min(3, count($allowedFilterKeys))));
             }

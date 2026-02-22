@@ -4,7 +4,9 @@ namespace Database\Seeders;
 
 use App\Models\Category;
 use App\Models\Example;
+use App\Support\CategoryFilterSchema;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
@@ -80,6 +82,7 @@ class ExampleSeeder extends Seeder
                 ->whenEmpty(fn (Collection $collection): Collection => $collection->push('Calm', 'Bold', 'Natural'))
                 ->values()
                 ->all();
+            $allowedFilterKeys = CategoryFilterSchema::allowedOptionKeys($category->filter_groups);
 
             foreach ($exampleBlueprints as $index => $blueprint) {
                 $title = "{$category->name}: {$blueprint['title']}";
@@ -88,6 +91,13 @@ class ExampleSeeder extends Seeder
                 $locationHint = $locationPool[array_rand($locationPool)];
                 $seasonHint = $seasonPool[array_rand($seasonPool)];
                 $clothingHint = $clothingPool[array_rand($clothingPool)];
+                $presetFilters = [];
+
+                if ($allowedFilterKeys !== []) {
+                    $shuffledFilterKeys = $allowedFilterKeys;
+                    shuffle($shuffledFilterKeys);
+                    $presetFilters = Arr::take($shuffledFilterKeys, random_int(1, min(3, count($shuffledFilterKeys))));
+                }
 
                 Example::query()->updateOrCreate(
                     ['slug' => $slug],
@@ -95,6 +105,7 @@ class ExampleSeeder extends Seeder
                         'category_id' => $category->id,
                         'title' => $title,
                         'summary' => $blueprint['summary'],
+                        'filter_option_keys' => $presetFilters,
                         'mood' => $mood,
                         'location_hint' => $locationHint,
                         'season_hint' => $seasonHint,

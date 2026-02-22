@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources\Examples\Schemas;
 
+use App\Models\Category;
+use App\Support\CategoryFilterSchema;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -22,6 +25,10 @@ class ExampleForm
                     ->relationship('category', 'name')
                     ->searchable()
                     ->preload()
+                    ->live()
+                    ->afterStateUpdated(function (Set $set): void {
+                        $set('filter_option_keys', []);
+                    })
                     ->required(),
                 TextInput::make('title')
                     ->required()
@@ -42,6 +49,45 @@ class ExampleForm
                     ->default(true),
                 Textarea::make('summary')
                     ->rows(4)
+                    ->columnSpanFull(),
+                CheckboxList::make('filter_option_keys')
+                    ->label('Preset filters')
+                    ->helperText('These filters will be applied when this preset is selected.')
+                    ->columns(2)
+                    ->searchable()
+                    ->visible(fn (Get $get): bool => filled($get('category_id')))
+                    ->options(function (Get $get): array {
+                        $categoryId = $get('category_id');
+
+                        if (blank($categoryId)) {
+                            return [];
+                        }
+
+                        $category = Category::query()
+                            ->select(['id', 'filter_groups'])
+                            ->find($categoryId);
+
+                        return CategoryFilterSchema::flattenOptions($category?->filter_groups);
+                    })
+                    ->rule(function (Get $get): \Closure {
+                        return function (string $attribute, mixed $value, \Closure $fail) use ($get): void {
+                            $categoryId = $get('category_id');
+
+                            if (blank($categoryId)) {
+                                return;
+                            }
+
+                            $category = Category::query()
+                                ->select(['id', 'filter_groups'])
+                                ->find($categoryId);
+
+                            $sanitized = CategoryFilterSchema::filterSelected($category?->filter_groups, $value);
+
+                            if (count($sanitized) !== count(is_array($value) ? $value : [])) {
+                                $fail('Selected preset filters must belong to the selected category.');
+                            }
+                        };
+                    })
                     ->columnSpanFull(),
                 TextInput::make('mood')
                     ->maxLength(255),

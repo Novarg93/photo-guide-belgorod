@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
 import { Check } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -54,15 +54,32 @@ interface ExampleItem {
     image_url: string;
 }
 
+interface PresetItem {
+    id: number;
+    title: string;
+    slug: string;
+    summary: string | null;
+    filter_option_keys: string[];
+}
+
+interface ActivePreset {
+    slug: string;
+    title: string;
+    summary: string | null;
+}
+
 const props = defineProps<{
     category: Category;
     examples: ExampleItem[];
+    presets: PresetItem[];
+    activePreset: ActivePreset | null;
     filterGroups: FilterGroup[];
     activeFilterOptionKeys: string[];
     metaTitle: string;
     metaDescription: string;
 }>();
 
+const selectedPreset = ref<string>(props.activePreset?.slug ?? 'custom');
 const selectedFilterOptionKeys = ref<string[]>([...props.activeFilterOptionKeys]);
 const selectedExampleIds = ref<number[]>([]);
 const isBriefDialogOpen = ref(false);
@@ -71,8 +88,32 @@ const briefNotes = ref<string>('');
 const briefRetouchPreference = ref<string>('not_set');
 const briefColorStyle = ref<string>('not_set');
 
-const buildQuery = (): Record<string, string[]> => {
-    const query: Record<string, string[]> = {};
+const currentPreset = computed(() => {
+    if (selectedPreset.value === 'custom') {
+        return null;
+    }
+
+    return props.presets.find((preset) => preset.slug === selectedPreset.value) ?? null;
+});
+
+const presetHelperText = computed(() => {
+    if (selectedPreset.value === 'custom') {
+        return 'Custom preset is active. Select a preset to apply saved filter combinations.';
+    }
+
+    if (currentPreset.value?.summary) {
+        return currentPreset.value.summary;
+    }
+
+    return 'Preset applies saved filters. Manual filter change switches to Custom.';
+});
+
+const buildQuery = (): Record<string, string | string[]> => {
+    const query: Record<string, string | string[]> = {};
+
+    if (selectedPreset.value !== 'custom') {
+        query.preset = selectedPreset.value;
+    }
 
     if (selectedFilterOptionKeys.value.length > 0) {
         query.filters = selectedFilterOptionKeys.value;
@@ -96,6 +137,10 @@ const toggleFilter = (optionKey: string): void => {
         selectedFilterOptionKeys.value = [...selectedFilterOptionKeys.value, optionKey];
     }
 
+    if (selectedPreset.value !== 'custom') {
+        selectedPreset.value = 'custom';
+    }
+
     applyFilters();
 };
 
@@ -104,6 +149,7 @@ const isFilterSelected = (optionKey: string): boolean => {
 };
 
 const resetFilters = (): void => {
+    selectedPreset.value = 'custom';
     selectedFilterOptionKeys.value = [];
 
     router.visit(showCategory.url({ slug: props.category.slug }), {
@@ -111,6 +157,28 @@ const resetFilters = (): void => {
         preserveScroll: true,
         replace: true,
     });
+};
+
+const updatePreset = (value: string): void => {
+    selectedPreset.value = value;
+
+    if (value === 'custom') {
+        applyFilters();
+
+        return;
+    }
+
+    const preset = props.presets.find((item) => item.slug === value);
+
+    if (! preset) {
+        selectedPreset.value = 'custom';
+        applyFilters();
+
+        return;
+    }
+
+    selectedFilterOptionKeys.value = [...preset.filter_option_keys];
+    applyFilters();
 };
 
 const createBrief = (): void => {
@@ -193,9 +261,27 @@ const setBriefColorStyle = (value: string): void => {
             </div>
 
             <div class="mt-8 rounded-2xl border border-zinc-200 bg-zinc-50/70 p-4">
+                <div class="grid gap-3 border-b border-zinc-200 pb-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+                    <div class="space-y-2">
+                        <Label for="preset-selector">Preset</Label>
+                        <Select :model-value="selectedPreset" @update:model-value="(value) => updatePreset(String(value))">
+                            <SelectTrigger id="preset-selector">
+                                <SelectValue placeholder="Custom" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="custom">Custom</SelectItem>
+                                <SelectItem v-for="preset in presets" :key="preset.id" :value="preset.slug">
+                                    {{ preset.title }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <p class="text-sm text-zinc-600">{{ presetHelperText }}</p>
+                    </div>
+                </div>
+
                 <div class="flex flex-wrap items-start justify-between gap-4">
                     <div class="space-y-3">
-                        <h2 class="text-sm font-semibold uppercase tracking-wide text-zinc-500">Filters</h2>
+                        <h2 class="pt-4 text-sm font-semibold uppercase tracking-wide text-zinc-500">Filters</h2>
 
                         <div v-if="filterGroups.length > 0" class="space-y-3">
                             <div v-for="group in filterGroups" :key="group.key" class="space-y-2">

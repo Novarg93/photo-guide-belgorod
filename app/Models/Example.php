@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\CategoryFilterSchema;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -20,6 +21,7 @@ class Example extends Model
         'title',
         'slug',
         'summary',
+        'filter_option_keys',
         'mood',
         'location_hint',
         'season_hint',
@@ -31,6 +33,7 @@ class Example extends Model
     protected function casts(): array
     {
         return [
+            'filter_option_keys' => 'array',
             'is_active' => 'boolean',
         ];
     }
@@ -83,6 +86,15 @@ class Example extends Model
             if ($example->exists && $example->isDirty('title') && ! $example->isDirty('slug')) {
                 $example->slug = static::generateUniqueSlug($example->title, $example->getKey());
             }
+
+            $categoryFilterGroups = Category::query()
+                ->whereKey($example->category_id)
+                ->first()?->filter_groups;
+
+            $example->filter_option_keys = CategoryFilterSchema::filterSelected(
+                $categoryFilterGroups,
+                $example->filter_option_keys,
+            );
         });
     }
 

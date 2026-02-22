@@ -59,10 +59,43 @@ class CatalogController extends Controller
 
         $filterGroups = CategoryFilterSchema::normalize($category->filter_groups);
         $filterLabelsByKey = CategoryFilterSchema::flattenOptions($category->filter_groups);
-        $activeFilterOptionKeys = CategoryFilterSchema::filterSelected(
+        $presets = $category->examples()
+            ->where('is_active', true)
+            ->select(['id', 'title', 'slug', 'summary', 'filter_option_keys'])
+            ->orderBy('title')
+            ->get();
+
+        $presetSlug = $request->filled('preset') ? (string) $request->query('preset') : null;
+        $requestedFilterOptionKeys = CategoryFilterSchema::filterSelected(
             $category->filter_groups,
             $request->query('filters', []),
         );
+        $hasExplicitFilters = $request->has('filters');
+
+        $activePreset = $presetSlug !== null ? $presets->firstWhere('slug', $presetSlug) : null;
+        $activeFilterOptionKeys = $requestedFilterOptionKeys;
+
+        if ($activePreset !== null && ! $hasExplicitFilters) {
+            $activeFilterOptionKeys = CategoryFilterSchema::filterSelected(
+                $category->filter_groups,
+                $activePreset->filter_option_keys,
+            );
+        }
+
+        if ($activePreset !== null && $hasExplicitFilters) {
+            $presetFilterOptionKeys = CategoryFilterSchema::filterSelected(
+                $category->filter_groups,
+                $activePreset->filter_option_keys,
+            );
+
+            sort($presetFilterOptionKeys);
+            $explicitFilterOptionKeys = $activeFilterOptionKeys;
+            sort($explicitFilterOptionKeys);
+
+            if ($presetFilterOptionKeys !== $explicitFilterOptionKeys) {
+                $activePreset = null;
+            }
+        }
 
         $examples = $category->examples()
             ->where('is_active', true)
@@ -120,6 +153,23 @@ class CatalogController extends Controller
                 'description' => $category->description,
             ],
             'examples' => $examples,
+            'presets' => $presets->map(fn ($preset): array => [
+                'id' => $preset->id,
+                'title' => $preset->title,
+                'slug' => $preset->slug,
+                'summary' => $preset->summary,
+                'filter_option_keys' => CategoryFilterSchema::filterSelected(
+                    $category->filter_groups,
+                    $preset->filter_option_keys,
+                ),
+            ]),
+            'activePreset' => $activePreset !== null
+                ? [
+                    'slug' => $activePreset->slug,
+                    'title' => $activePreset->title,
+                    'summary' => $activePreset->summary,
+                ]
+                : null,
             'filterGroups' => $filterGroups,
             'activeFilterOptionKeys' => $activeFilterOptionKeys,
             'metaTitle' => $category->seo_title ?: $category->name,

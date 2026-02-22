@@ -141,6 +141,96 @@ it('filters examples by selected photo filter options', function () {
             ->where('activeFilterOptionKeys', ['moods.warm']));
 });
 
+it('applies preset filters when preset is selected without explicit filters', function () {
+    $category = Category::factory()->create([
+        'slug' => 'family',
+        'is_active' => true,
+        'filter_groups' => [
+            [
+                'name' => 'Moods',
+                'options' => [
+                    ['name' => 'Warm'],
+                    ['name' => 'Cool'],
+                ],
+            ],
+        ],
+    ]);
+
+    $preset = Example::factory()->create([
+        'category_id' => $category->id,
+        'title' => 'Warm Preset',
+        'slug' => 'warm-preset',
+        'filter_option_keys' => ['moods.warm'],
+        'is_active' => true,
+    ]);
+
+    $warmExample = Example::factory()->create([
+        'category_id' => $category->id,
+        'title' => 'Warm Match',
+        'slug' => 'warm-match',
+        'is_active' => true,
+    ]);
+
+    Example::factory()->create([
+        'category_id' => $category->id,
+        'title' => 'Cool Match',
+        'slug' => 'cool-match',
+        'is_active' => true,
+    ]);
+
+    Photo::factory()->create([
+        'category_id' => $category->id,
+        'example_id' => $warmExample->id,
+        'filter_option_keys' => ['moods.warm'],
+        'is_active' => true,
+    ]);
+
+    $this->get(route('categories.show', [
+        'slug' => $category->slug,
+        'preset' => $preset->slug,
+    ]))
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('CategoryShow')
+            ->where('activePreset.slug', 'warm-preset')
+            ->where('activeFilterOptionKeys', ['moods.warm']));
+});
+
+it('switches to custom when explicit filters differ from preset filters', function () {
+    $category = Category::factory()->create([
+        'slug' => 'family',
+        'is_active' => true,
+        'filter_groups' => [
+            [
+                'name' => 'Moods',
+                'options' => [
+                    ['name' => 'Warm'],
+                    ['name' => 'Cool'],
+                ],
+            ],
+        ],
+    ]);
+
+    Example::factory()->create([
+        'category_id' => $category->id,
+        'title' => 'Warm Preset',
+        'slug' => 'warm-preset',
+        'filter_option_keys' => ['moods.warm'],
+        'is_active' => true,
+    ]);
+
+    $this->get(route('categories.show', [
+        'slug' => $category->slug,
+        'preset' => 'warm-preset',
+        'filters' => ['moods.cool'],
+    ]))
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('CategoryShow')
+            ->where('activePreset', null)
+            ->where('activeFilterOptionKeys', ['moods.cool']));
+});
+
 it('prefers active photo url over fallback image url for category cards', function () {
     $category = Category::factory()->create([
         'slug' => 'family',
