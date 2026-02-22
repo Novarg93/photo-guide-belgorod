@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
             ExampleSeeder::class,
             PhotoSeeder::class,
+            LocationSeeder::class,
         ]);
 
         User::query()->firstOrCreate([

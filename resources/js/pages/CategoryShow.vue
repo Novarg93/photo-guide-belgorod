@@ -54,6 +54,13 @@ interface ExampleItem {
     image_url: string;
 }
 
+interface LocationItem {
+    id: number;
+    name: string;
+    image_url: string;
+    filter_option_labels: string[];
+}
+
 interface PresetItem {
     id: number;
     title: string;
@@ -71,6 +78,7 @@ interface ActivePreset {
 const props = defineProps<{
     category: Category;
     examples: ExampleItem[];
+    locations: LocationItem[];
     presets: PresetItem[];
     activePreset: ActivePreset | null;
     filterGroups: FilterGroup[];
@@ -458,6 +466,50 @@ const setBriefColorStyle = (value: string): void => {
                 class="mt-8 rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-5 text-zinc-600"
             >
                 No examples match the selected filters.
+            </div>
+
+            <div class="mt-12 flex items-center justify-between gap-4">
+                <h2 class="text-2xl font-semibold tracking-tight text-zinc-900">Recommended locations</h2>
+                <Link href="/locations" class="text-sm text-zinc-500 transition hover:text-zinc-900">View all locations</Link>
+            </div>
+
+            <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <article
+                    v-for="location in locations"
+                    :key="location.id"
+                    class="overflow-hidden rounded-2xl border border-zinc-200 bg-white"
+                >
+                    <div class="aspect-16/10 overflow-hidden bg-zinc-100">
+                        <img
+                            :src="location.image_url"
+                            :alt="location.name"
+                            class="h-full w-full object-cover"
+                            loading="lazy"
+                        />
+                    </div>
+
+                    <div class="space-y-2 p-4">
+                        <h3 class="text-base font-semibold text-zinc-900">{{ location.name }}</h3>
+
+                        <div class="flex flex-wrap gap-1.5">
+                            <Badge
+                                v-for="label in location.filter_option_labels.slice(0, 3)"
+                                :key="`${location.id}-${label}`"
+                                variant="secondary"
+                                class="bg-zinc-100 text-zinc-800"
+                            >
+                                {{ label }}
+                            </Badge>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <div
+                v-if="locations.length === 0"
+                class="mt-4 rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-5 text-zinc-600"
+            >
+                No locations match the selected filters for this category.
             </div>
         </section>
     </AppHeaderLayout>

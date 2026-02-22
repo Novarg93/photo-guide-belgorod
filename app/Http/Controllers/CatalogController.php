@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\Location;
 use App\Support\CategoryFilterSchema;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -47,6 +48,27 @@ class CatalogController extends Controller
         return Inertia::render('Copyright', [
             'metaTitle' => 'Copyright and Photo Sources',
             'metaDescription' => 'Information about photo sources and content removal requests.',
+        ]);
+    }
+
+    public function locations(): Response
+    {
+        $locations = Location::query()
+            ->with('category')
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get()
+            ->map(fn (Location $location): array => [
+                'id' => $location->id,
+                'name' => $location->name,
+                'category' => $location->category?->name,
+                'image_url' => $location->image_url,
+            ]);
+
+        return Inertia::render('Locations', [
+            'locations' => $locations,
+            'metaTitle' => 'Locations Catalog',
+            'metaDescription' => 'All available photo locations in Belgorod.',
         ]);
     }
 
@@ -146,6 +168,36 @@ class CatalogController extends Controller
                 'image_url' => $example->cover_url ?? $example->image_url,
             ]);
 
+        $locations = $category->locations()
+            ->where('is_active', true)
+            ->select([
+                'id',
+                'name',
+                'photo_path',
+                'filter_option_keys',
+            ])
+            ->when(
+                $activeFilterOptionKeys !== [],
+                function (Builder $query) use ($activeFilterOptionKeys): void {
+                    foreach ($activeFilterOptionKeys as $optionKey) {
+                        $query->whereJsonContains('filter_option_keys', $optionKey);
+                    }
+                },
+            )
+            ->orderBy('name')
+            ->get()
+            ->map(fn (Location $location): array => [
+                'id' => $location->id,
+                'name' => $location->name,
+                'image_url' => $location->image_url,
+                'filter_option_labels' => collect(
+                    CategoryFilterSchema::filterSelected($category->filter_groups, $location->filter_option_keys),
+                )
+                    ->map(fn (string $optionKey): string => $filterLabelsByKey[$optionKey] ?? $optionKey)
+                    ->values()
+                    ->all(),
+            ]);
+
         return Inertia::render('CategoryShow', [
             'category' => [
                 'name' => $category->name,
@@ -153,6 +205,7 @@ class CatalogController extends Controller
                 'description' => $category->description,
             ],
             'examples' => $examples,
+            'locations' => $locations,
             'presets' => $presets->map(fn ($preset): array => [
                 'id' => $preset->id,
                 'title' => $preset->title,

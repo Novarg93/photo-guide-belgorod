@@ -40,6 +40,11 @@ class Category extends Model
         return $this->hasMany(Brief::class);
     }
 
+    public function locations(): HasMany
+    {
+        return $this->hasMany(Location::class);
+    }
+
     protected static function booted(): void
     {
         static::saving(function (Category $category): void {
