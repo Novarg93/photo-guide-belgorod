@@ -116,6 +116,8 @@ const resetFilters = (): void => {
 const createBrief = (): void => {
     const toNullableBriefValue = (value: string): string | null => (value === 'not_set' ? null : value);
     const preparedNotes = briefNotes.value.trim();
+    const exampleIdsForBrief =
+        selectedExampleIds.value.length > 0 ? selectedExampleIds.value : props.examples.map((example) => example.id);
 
     router.post(
         '/briefs',
@@ -129,7 +131,7 @@ const createBrief = (): void => {
             notes: preparedNotes.length > 0 ? preparedNotes : null,
             retouch_preference: toNullableBriefValue(briefRetouchPreference.value),
             color_style: toNullableBriefValue(briefColorStyle.value),
-            selected_example_ids: selectedExampleIds.value,
+            selected_example_ids: exampleIdsForBrief,
         },
         {
             preserveScroll: true,
