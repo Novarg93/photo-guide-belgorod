@@ -29,6 +29,9 @@ class CategoryForm
 
                         $set('slug', Str::slug((string) $state));
                     }),
+                TextInput::make('title')
+                    ->required()
+                    ->maxLength(255),
                 TextInput::make('slug')
                     ->required()
                     ->maxLength(255)

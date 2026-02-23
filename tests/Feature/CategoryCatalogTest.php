@@ -36,6 +36,7 @@ it('shows only active categories in catalog', function () {
 it('shows category detail by slug', function () {
     $category = Category::factory()->create([
         'name' => 'Family',
+        'title' => 'Family photo sessions in Belgorod',
         'slug' => 'family',
         'description' => 'Family sessions in Belgorod.',
         'is_active' => true,
@@ -46,6 +47,7 @@ it('shows category detail by slug', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->component('CategoryShow')
             ->where('category.name', 'Family')
+            ->where('category.title', 'Family photo sessions in Belgorod')
             ->where('category.description', 'Family sessions in Belgorod.'));
 });
 

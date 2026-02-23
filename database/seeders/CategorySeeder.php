@@ -192,6 +192,7 @@ class CategorySeeder extends Seeder
                 ['slug' => Str::slug($categoryData['name'])],
                 [
                     'name' => $categoryData['name'],
+                    'title' => $categoryData['name'].' photo sessions in Belgorod',
                     'description' => $categoryData['description'],
                     'filter_groups' => $categoryData['filter_groups'],
                     'is_active' => true,

@@ -7,11 +7,13 @@ use App\Support\CategoryFilterSchema;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Str;
 
 class LocationForm
 {
@@ -22,7 +24,19 @@ class LocationForm
             ->components([
                 TextInput::make('name')
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->live(onBlur: true)
+                    ->afterStateUpdated(function (Get $get, Set $set, ?string $old, ?string $state): void {
+                        if (($get('slug') ?? '') !== Str::slug((string) $old)) {
+                            return;
+                        }
+
+                        $set('slug', Str::slug((string) $state));
+                    }),
+                TextInput::make('slug')
+                    ->required()
+                    ->maxLength(255)
+                    ->unique(ignoreRecord: true),
                 Select::make('category_id')
                     ->relationship('category', 'name')
                     ->searchable()
@@ -77,6 +91,27 @@ class LocationForm
                     ->directory('locations')
                     ->image()
                     ->required(fn (string $operation): bool => $operation === 'create')
+                    ->columnSpanFull(),
+                FileUpload::make('example_photo_paths')
+                    ->label('Photo session examples')
+                    ->disk('public')
+                    ->directory('locations/examples')
+                    ->image()
+                    ->multiple()
+                    ->reorderable()
+                    ->columnSpanFull(),
+                Textarea::make('description')
+                    ->rows(5)
+                    ->columnSpanFull(),
+                TextInput::make('seo_title')
+                    ->label('SEO title')
+                    ->maxLength(255)
+                    ->helperText('Recommended length: up to 60 characters.')
+                    ->columnSpanFull(),
+                Textarea::make('seo_description')
+                    ->label('SEO description')
+                    ->rows(3)
+                    ->helperText('Recommended length: up to 160 characters.')
                     ->columnSpanFull(),
                 Toggle::make('is_active')
                     ->default(true),

@@ -14,6 +14,7 @@ it('shows all active locations on locations catalog page', function () {
     Location::factory()->create([
         'category_id' => $category->id,
         'name' => 'Central Park Belts',
+        'slug' => 'central-park-belts',
         'is_active' => true,
     ]);
 
@@ -28,7 +29,8 @@ it('shows all active locations on locations catalog page', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->component('Locations')
             ->has('locations', 1)
-            ->where('locations.0.name', 'Central Park Belts'));
+            ->where('locations.0.name', 'Central Park Belts')
+            ->where('locations.0.url', route('locations.show', ['slug' => 'central-park-belts'])));
 });
 
 it('shows recommended locations for category and current filters', function () {
@@ -70,4 +72,34 @@ it('shows recommended locations for category and current filters', function () {
             ->component('CategoryShow')
             ->has('locations', 1)
             ->where('locations.0.name', 'Romantic Garden'));
+});
+
+it('shows location page with photo session examples array', function () {
+    $category = Category::factory()->create([
+        'name' => 'Family',
+        'slug' => 'family',
+        'is_active' => true,
+    ]);
+
+    $location = Location::factory()->create([
+        'category_id' => $category->id,
+        'name' => 'Park Pobedy Belgorod',
+        'slug' => 'park-pobedy-belgorod',
+        'description' => 'Photo sessions in Park Pobedy Belgorod during all seasons.',
+        'seo_title' => 'Photo sessions in Park Pobedy Belgorod',
+        'seo_description' => 'Examples of photo sessions in Park Pobedy Belgorod and ideas for shooting.',
+        'example_photo_paths' => [
+            'photos/placeholder.svg',
+            'locations/placeholder.svg',
+        ],
+        'is_active' => true,
+    ]);
+
+    $this->get(route('locations.show', ['slug' => $location->slug]))
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('LocationShow')
+            ->where('location.name', 'Park Pobedy Belgorod')
+            ->has('location.example_photos', 2)
+            ->where('metaTitle', 'Photo sessions in Park Pobedy Belgorod'));
 });

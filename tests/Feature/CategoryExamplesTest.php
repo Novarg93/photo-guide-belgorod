@@ -12,7 +12,7 @@ it('shows active examples on category page', function () {
         'is_active' => true,
     ]);
 
-    Example::factory()->create([
+    $activeExample = Example::factory()->create([
         'category_id' => $category->id,
         'title' => 'Golden Hour Walk',
         'slug' => 'golden-hour-walk',
@@ -24,6 +24,13 @@ it('shows active examples on category page', function () {
         'title' => 'Hidden Draft Example',
         'slug' => 'hidden-draft-example',
         'is_active' => false,
+    ]);
+
+    Photo::factory()->create([
+        'category_id' => $category->id,
+        'example_id' => $activeExample->id,
+        'path' => 'photos/golden-hour-walk.svg',
+        'is_active' => true,
     ]);
 
     $this->get(route('categories.show', ['slug' => $category->slug]))
@@ -118,6 +125,7 @@ it('filters examples by selected photo filter options', function () {
     Photo::factory()->create([
         'category_id' => $category->id,
         'example_id' => $warmExample->id,
+        'path' => 'photos/warm-match.svg',
         'filter_option_keys' => ['moods.warm'],
         'is_active' => true,
     ]);
@@ -125,6 +133,7 @@ it('filters examples by selected photo filter options', function () {
     Photo::factory()->create([
         'category_id' => $category->id,
         'example_id' => $coolExample->id,
+        'path' => 'photos/cool-match.svg',
         'filter_option_keys' => ['moods.cool'],
         'is_active' => true,
     ]);
@@ -181,6 +190,7 @@ it('applies preset filters when preset is selected without explicit filters', fu
     Photo::factory()->create([
         'category_id' => $category->id,
         'example_id' => $warmExample->id,
+        'path' => 'photos/warm-preset.svg',
         'filter_option_keys' => ['moods.warm'],
         'is_active' => true,
     ]);
@@ -259,4 +269,28 @@ it('prefers active photo url over fallback image url for category cards', functi
             ->component('CategoryShow')
             ->where('examples.0.title', 'With Photo Cover')
             ->where('examples.0.image_url', fn (string $url): bool => str_contains($url, '/storage/photos/cover-test.svg')));
+});
+
+it('shows standalone active photos for category', function () {
+    $category = Category::factory()->create([
+        'slug' => 'family',
+        'is_active' => true,
+    ]);
+
+    Photo::factory()->create([
+        'category_id' => $category->id,
+        'example_id' => null,
+        'title' => 'Standalone Family Photo',
+        'path' => 'photos/family-standalone.svg',
+        'is_active' => true,
+    ]);
+
+    $this->get(route('categories.show', ['slug' => $category->slug]))
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('CategoryShow')
+            ->has('examples', 1)
+            ->where('examples.0.title', 'Standalone Family Photo')
+            ->where('examples.0.example_id', null)
+            ->where('examples.0.image_url', fn (string $url): bool => str_contains($url, '/storage/photos/family-standalone.svg')));
 });

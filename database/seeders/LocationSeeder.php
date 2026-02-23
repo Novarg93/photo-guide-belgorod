@@ -8,6 +8,7 @@ use App\Support\CategoryFilterSchema;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class LocationSeeder extends Seeder
 {
@@ -44,13 +45,22 @@ class LocationSeeder extends Seeder
                     $selectedFilters = Arr::take($shuffled, random_int(1, min(3, count($shuffled))));
                 }
 
-                Location::query()->updateOrCreate(
+                $location = Location::query()->updateOrCreate(
                     [
                         'category_id' => $category->id,
                         'name' => "{$category->name}: {$locationName} ".($index + 1),
                     ],
                     [
+                        'slug' => Str::slug("category-{$category->id}-{$locationName}-".($index + 1)),
+                        'description' => "Location {$locationName} in Belgorod for {$category->name} photo sessions.",
+                        'seo_title' => "{$locationName} - photo sessions in Belgorod",
+                        'seo_description' => "Ideas and examples for photo sessions at {$locationName} in Belgorod: poses, style, and shooting scenarios.",
                         'photo_path' => $placeholderPath,
+                        'example_photo_paths' => [
+                            $placeholderPath,
+                            $placeholderPath,
+                            $placeholderPath,
+                        ],
                         'filter_option_keys' => $selectedFilters,
                         'is_active' => true,
                     ],

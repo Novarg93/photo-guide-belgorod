@@ -1,21 +1,25 @@
 ﻿<script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
-import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue';
+import { Link } from '@inertiajs/vue3';
+import { useHead } from '@vueuse/head';
 import { Button } from '@/components/ui/button';
+import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue';
 import { catalog } from '@/routes';
 
-defineProps<{
+const props = defineProps<{
     metaTitle: string;
     metaDescription: string;
 }>();
+
+useHead(() => ({
+    title: props.metaTitle,
+    meta: [
+        { key: 'description', name: 'description', content: props.metaDescription },
+    ],
+}));
 </script>
 
 <template>
     <AppHeaderLayout>
-        <Head :title="metaTitle">
-            <meta head-key="description" name="description" :content="metaDescription" />
-        </Head>
-
         <section class="mx-auto w-full max-w-5xl py-12 md:py-20">
             <p class="mb-4 inline-flex rounded-full border border-zinc-200 bg-white/70 px-4 py-1 text-xs font-medium uppercase tracking-[0.2em] text-zinc-500">
                 Photo Guide Belgorod

@@ -1,9 +1,9 @@
 ﻿<script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
-import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue';
 import { catalog } from '@/routes';
 import { show as showCategory } from '@/routes/categories';
 
@@ -18,10 +18,11 @@ interface Filters {
     season: string | null;
     location: string | null;
     clothing: string | null;
+    active_filter_option_keys?: string[];
 }
 
 interface ExampleItem {
-    id: number;
+    id: string;
     title: string;
     summary: string | null;
     mood: string | null;
@@ -31,10 +32,19 @@ interface ExampleItem {
     image_url: string;
 }
 
+interface LocationItem {
+    id: number;
+    name: string;
+    image_url: string;
+    filter_option_labels: string[];
+}
+
 const props = defineProps<{
     category: Category;
     filters: Filters;
+    locationFilterOptionLabels: string[];
     examples: ExampleItem[];
+    locations: LocationItem[];
     selectedExampleIds: number[];
     peopleCount: string | null;
     notes: string | null;
@@ -71,22 +81,11 @@ const selectedFilterBadges = computed(() => {
 });
 
 const backToCategoryUrl = computed(() => {
-    const query: Record<string, string> = {};
+    const query: Record<string, string | string[]> = {};
+    const activeFilterOptionKeys = props.filters.active_filter_option_keys ?? [];
 
-    if (props.filters.mood) {
-        query.mood = props.filters.mood;
-    }
-
-    if (props.filters.season) {
-        query.season = props.filters.season;
-    }
-
-    if (props.filters.location) {
-        query.location = props.filters.location;
-    }
-
-    if (props.filters.clothing) {
-        query.clothing = props.filters.clothing;
+    if (activeFilterOptionKeys.length > 0) {
+        query.filters = activeFilterOptionKeys;
     }
 
     return showCategory.url({ slug: props.category.slug }, { query });
@@ -94,56 +93,69 @@ const backToCategoryUrl = computed(() => {
 
 const briefText = computed(() => {
     const lines: string[] = [
-        'Бриф для фотографа',
-        `Категория: ${props.category.name}`,
+        'Brief for photographer',
+        `Category: ${props.category.name}`,
     ];
 
     if (selectedFilterBadges.value.length > 0) {
-        lines.push('Фильтры:');
+        lines.push('Filters:');
 
         selectedFilterBadges.value.forEach((badge) => {
             lines.push(`- ${badge.label}: ${badge.value}`);
         });
     } else {
-        lines.push('Фильтры: не выбраны');
+        lines.push('Filters: not selected');
     }
 
     if (props.peopleCount) {
-        lines.push(`Количество человек: ${props.peopleCount}`);
+        lines.push(`People count: ${props.peopleCount}`);
     }
 
     if (props.notes) {
-        lines.push(`Пожелания: ${props.notes}`);
+        lines.push(`Notes: ${props.notes}`);
     }
 
     if (props.retouchPreference) {
-        lines.push(`Ретушь: ${props.retouchPreference}`);
+        lines.push(`Retouch: ${props.retouchPreference}`);
     }
 
     if (props.colorStyle) {
-        lines.push(`Цвет: ${props.colorStyle}`);
+        lines.push(`Color: ${props.colorStyle}`);
     }
 
-    lines.push(`Ссылка: ${props.shareUrl}`);
-    lines.push('Примеры:');
+    lines.push(`Link: ${props.shareUrl}`);
+    lines.push('Examples:');
 
     if (props.examples.length === 0) {
-        lines.push('1. Подходящих примеров нет');
+        lines.push('1. No matching examples');
     } else {
         props.examples.forEach((example, index) => {
             const hints: string[] = [];
 
             if (example.mood) {
-                hints.push(`настроение: ${example.mood}`);
+                hints.push(`mood: ${example.mood}`);
             }
 
             if (example.location_hint) {
-                hints.push(`локация: ${example.location_hint}`);
+                hints.push(`location: ${example.location_hint}`);
             }
 
             lines.push(
                 `${index + 1}. ${example.title}${hints.length > 0 ? ` (${hints.join(', ')})` : ''}`,
             );
+        });
+    }
+
+    lines.push('Locations:');
+    if (props.locationFilterOptionLabels.length > 0) {
+        lines.push(`Applied location filters: ${props.locationFilterOptionLabels.join(', ')}`);
+    }
+
+    if (props.locations.length === 0) {
+        lines.push('1. No matching locations');
+    } else {
+        props.locations.forEach((location, index) => {
+            lines.push(`${index + 1}. ${location.name}`);
         });
     }
 
@@ -250,6 +262,59 @@ const copyBriefText = async (): Promise<void> => {
                         <h2 class="line-clamp-2 text-lg font-semibold text-white">{{ example.title }}</h2>
                     </div>
                 </article>
+            </div>
+
+            <div class="mt-12 flex items-center justify-between gap-4">
+                <h2 class="text-2xl font-semibold tracking-tight text-zinc-900">Recommended locations</h2>
+            </div>
+
+            <div v-if="locationFilterOptionLabels.length > 0" class="mt-3 flex flex-wrap gap-1.5">
+                <Badge
+                    v-for="label in locationFilterOptionLabels"
+                    :key="`location-filter-${label}`"
+                    variant="outline"
+                >
+                    {{ label }}
+                </Badge>
+            </div>
+
+            <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <article
+                    v-for="location in locations"
+                    :key="location.id"
+                    class="overflow-hidden rounded-2xl border border-zinc-200 bg-white"
+                >
+                    <div class="aspect-16/10 overflow-hidden bg-zinc-100">
+                        <img
+                            :src="location.image_url"
+                            :alt="location.name"
+                            class="h-full w-full object-cover"
+                            loading="lazy"
+                        />
+                    </div>
+
+                    <div class="space-y-2 p-4">
+                        <h3 class="text-base font-semibold text-zinc-900">{{ location.name }}</h3>
+
+                        <div class="flex flex-wrap gap-1.5">
+                            <Badge
+                                v-for="label in location.filter_option_labels.slice(0, 3)"
+                                :key="`${location.id}-${label}`"
+                                variant="secondary"
+                                class="bg-zinc-100 text-zinc-800"
+                            >
+                                {{ label }}
+                            </Badge>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <div
+                v-if="locations.length === 0"
+                class="mt-4 rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-5 text-zinc-600"
+            >
+                No locations match the selected filters for this brief.
             </div>
         </section>
     </AppHeaderLayout>

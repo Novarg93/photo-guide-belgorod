@@ -1,27 +1,34 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
+import { useHead } from '@vueuse/head';
 import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue';
 
 interface LocationCard {
     id: number;
     name: string;
+    slug: string;
     category: string | null;
     image_url: string;
+    description: string | null;
+    url: string;
 }
 
-defineProps<{
+const props = defineProps<{
     locations: LocationCard[];
     metaTitle: string;
     metaDescription: string;
 }>();
+
+useHead(() => ({
+    title: props.metaTitle,
+    meta: [
+        { key: 'description', name: 'description', content: props.metaDescription },
+    ],
+}));
 </script>
 
 <template>
     <AppHeaderLayout>
-        <Head :title="metaTitle">
-            <meta head-key="description" name="description" :content="metaDescription" />
-        </Head>
-
         <section class="mx-auto w-full max-w-7xl py-8">
             <Link href="/catalog" class="text-sm text-zinc-500 transition hover:text-zinc-900">Back to catalog</Link>
 
@@ -39,19 +46,26 @@ defineProps<{
                     :key="location.id"
                     class="overflow-hidden rounded-2xl border border-zinc-200 bg-white"
                 >
-                    <div class="aspect-16/10 overflow-hidden bg-zinc-100">
-                        <img
-                            :src="location.image_url"
-                            :alt="location.name"
-                            class="h-full w-full object-cover"
-                            loading="lazy"
-                        />
-                    </div>
+                    <Link :href="location.url" class="block">
+                        <div class="aspect-16/10 overflow-hidden bg-zinc-100">
+                            <img
+                                :src="location.image_url"
+                                :alt="location.name"
+                                class="h-full w-full object-cover transition duration-300 hover:scale-[1.02]"
+                                loading="lazy"
+                            />
+                        </div>
 
-                    <div class="space-y-1 p-4">
-                        <h2 class="text-lg font-semibold text-zinc-900">{{ location.name }}</h2>
-                        <p v-if="location.category" class="text-sm text-zinc-600">Category: {{ location.category }}</p>
-                    </div>
+                        <div class="space-y-2 p-4">
+                            <h2 class="text-lg font-semibold text-zinc-900">{{ location.name }}</h2>
+                            <p v-if="location.category" class="text-sm text-zinc-600">
+                                Category: {{ location.category }}
+                            </p>
+                            <p v-if="location.description" class="line-clamp-2 text-sm text-zinc-500">
+                                {{ location.description }}
+                            </p>
+                        </div>
+                    </Link>
                 </article>
             </div>
 

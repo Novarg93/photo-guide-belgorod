@@ -1,5 +1,6 @@
 ﻿<script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
+import { useHead } from '@vueuse/head';
 import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue';
 import { home } from '@/routes';
 
@@ -16,19 +17,22 @@ interface CategoryCard {
     url: string;
 }
 
-defineProps<{
+const props = defineProps<{
     categories: CategoryCard[];
     metaTitle: string;
     metaDescription: string;
 }>();
+
+useHead(() => ({
+    title: props.metaTitle,
+    meta: [
+        { key: 'description', name: 'description', content: props.metaDescription },
+    ],
+}));
 </script>
 
 <template>
     <AppHeaderLayout>
-        <Head :title="metaTitle">
-            <meta head-key="description" name="description" :content="metaDescription" />
-        </Head>
-
         <section class="mx-auto w-full max-w-6xl py-8">
             <Link :href="home()" class="text-sm text-zinc-500 transition hover:text-zinc-900">Back to home</Link>
 

@@ -150,7 +150,7 @@ class PhotoForm
                     ->columnSpanFull()
                     ->required(fn (Get $get): bool => $get('source_type') === 'permission' && blank($get('source_url'))),
                 Toggle::make('is_active')
-                    ->default(false),
+                    ->default(true),
             ]);
     }
 }

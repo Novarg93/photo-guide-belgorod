@@ -21,6 +21,7 @@ class CategoryFactory extends Factory
 
         return [
             'name' => Str::title($name),
+            'title' => Str::title($name).' photo sessions',
             'slug' => Str::slug($name),
             'description' => fake()->sentence(),
             'filter_groups' => [

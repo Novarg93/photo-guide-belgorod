@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
+import { useHead } from '@vueuse/head';
 import { Check } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
-import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,11 +22,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue';
 import { catalog } from '@/routes';
 import { show as showCategory } from '@/routes/categories';
 
 interface Category {
     name: string;
+    title: string | null;
     slug: string;
     description: string | null;
 }
@@ -43,7 +45,9 @@ interface FilterGroup {
 }
 
 interface ExampleItem {
-    id: number;
+    id: string;
+    example_id: number | null;
+    photo_id: number | null;
     title: string;
     summary: string | null;
     mood: string | null;
@@ -87,9 +91,16 @@ const props = defineProps<{
     metaDescription: string;
 }>();
 
+useHead(() => ({
+    title: props.metaTitle,
+    meta: [
+        { key: 'description', name: 'description', content: props.metaDescription },
+    ],
+}));
+
 const selectedPreset = ref<string>(props.activePreset?.slug ?? 'custom');
 const selectedFilterOptionKeys = ref<string[]>([...props.activeFilterOptionKeys]);
-const selectedExampleIds = ref<number[]>([]);
+const selectedCardIds = ref<string[]>([]);
 const isBriefDialogOpen = ref(false);
 const briefPeopleCount = ref<string>('not_set');
 const briefNotes = ref<string>('');
@@ -192,8 +203,25 @@ const updatePreset = (value: string): void => {
 const createBrief = (): void => {
     const toNullableBriefValue = (value: string): string | null => (value === 'not_set' ? null : value);
     const preparedNotes = briefNotes.value.trim();
-    const exampleIdsForBrief =
-        selectedExampleIds.value.length > 0 ? selectedExampleIds.value : props.examples.map((example) => example.id);
+    const selectedCards =
+        selectedCardIds.value.length > 0
+            ? props.examples.filter((example) => selectedCardIds.value.includes(example.id))
+            : props.examples;
+
+    const exampleIdsForBrief = Array.from(
+        new Set(
+            selectedCards
+                .map((example) => example.example_id)
+                .filter((exampleId): exampleId is number => exampleId !== null),
+        ),
+    );
+    const photoIdsForBrief = Array.from(
+        new Set(
+            selectedCards
+                .map((example) => example.photo_id)
+                .filter((photoId): photoId is number => photoId !== null),
+        ),
+    );
 
     router.post(
         '/briefs',
@@ -207,7 +235,9 @@ const createBrief = (): void => {
             notes: preparedNotes.length > 0 ? preparedNotes : null,
             retouch_preference: toNullableBriefValue(briefRetouchPreference.value),
             color_style: toNullableBriefValue(briefColorStyle.value),
+            active_filter_option_keys: selectedFilterOptionKeys.value,
             selected_example_ids: exampleIdsForBrief,
+            selected_photo_ids: photoIdsForBrief,
         },
         {
             preserveScroll: true,
@@ -218,18 +248,18 @@ const createBrief = (): void => {
     );
 };
 
-const toggleExampleSelection = (exampleId: number): void => {
-    if (selectedExampleIds.value.includes(exampleId)) {
-        selectedExampleIds.value = selectedExampleIds.value.filter((id) => id !== exampleId);
+const toggleExampleSelection = (cardId: string): void => {
+    if (selectedCardIds.value.includes(cardId)) {
+        selectedCardIds.value = selectedCardIds.value.filter((id) => id !== cardId);
 
         return;
     }
 
-    selectedExampleIds.value = [...selectedExampleIds.value, exampleId];
+    selectedCardIds.value = [...selectedCardIds.value, cardId];
 };
 
-const isExampleSelected = (exampleId: number): boolean => {
-    return selectedExampleIds.value.includes(exampleId);
+const isExampleSelected = (cardId: string): boolean => {
+    return selectedCardIds.value.includes(cardId);
 };
 
 const setBriefPeopleCount = (value: string): void => {
@@ -247,17 +277,13 @@ const setBriefColorStyle = (value: string): void => {
 
 <template>
     <AppHeaderLayout>
-        <Head :title="metaTitle">
-            <meta head-key="description" name="description" :content="metaDescription" />
-        </Head>
-
         <section class="mx-auto w-full max-w-7xl py-8">
             <Link :href="catalog()" class="text-sm text-zinc-500 transition hover:text-zinc-900">Back to catalog</Link>
 
             <div class="mt-4 flex flex-wrap items-end justify-between gap-4">
                 <div>
                     <h1 class="text-3xl font-semibold tracking-tight text-zinc-900 md:text-4xl">
-                        {{ category.name }}
+                        {{ category.title || category.name }}
                     </h1>
 
                     <p class="mt-3 max-w-3xl text-sm leading-relaxed text-zinc-600">
@@ -465,7 +491,7 @@ const setBriefColorStyle = (value: string): void => {
                 v-if="examples.length === 0"
                 class="mt-8 rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-5 text-zinc-600"
             >
-                No examples match the selected filters.
+                No photos match the selected filters.
             </div>
 
             <div class="mt-12 flex items-center justify-between gap-4">

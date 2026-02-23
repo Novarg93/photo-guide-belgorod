@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Location;
+use App\Models\PageSeo;
+use App\Models\Photo;
 use App\Support\CategoryFilterSchema;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -14,22 +16,35 @@ class CatalogController extends Controller
 {
     public function welcome(): Response
     {
+        $seo = $this->resolvePageSeo(
+            PageSeo::PAGE_WELCOME,
+            'Photo sessions in Belgorod',
+            'Choose a photo session category in Belgorod and continue to the next planning step.',
+        );
+
         return Inertia::render('Welcome', [
-            'metaTitle' => 'Photo sessions in Belgorod',
-            'metaDescription' => 'Choose a photo session category in Belgorod and continue to the next planning step.',
+            'metaTitle' => $seo['metaTitle'],
+            'metaDescription' => $seo['metaDescription'],
         ]);
     }
 
     public function index(): Response
     {
+        $seo = $this->resolvePageSeo(
+            PageSeo::PAGE_CATALOG,
+            'Photo Session Catalog',
+            'Choose a category and continue to the next planning step.',
+        );
+
         $categories = Category::query()
-            ->select(['id', 'name', 'slug', 'description', 'filter_groups'])
+            ->select(['id', 'name', 'title', 'slug', 'description', 'filter_groups'])
             ->where('is_active', true)
             ->orderBy('name')
             ->get()
             ->map(fn (Category $category): array => [
                 'id' => $category->id,
                 'name' => $category->name,
+                'title' => $category->title,
                 'slug' => $category->slug,
                 'description' => $category->description,
                 'filter_groups' => CategoryFilterSchema::normalize($category->filter_groups),
@@ -38,8 +53,8 @@ class CatalogController extends Controller
 
         return Inertia::render('Catalog', [
             'categories' => $categories,
-            'metaTitle' => 'Photo Session Catalog',
-            'metaDescription' => 'Choose a category and continue to the next planning step.',
+            'metaTitle' => $seo['metaTitle'],
+            'metaDescription' => $seo['metaDescription'],
         ]);
     }
 
@@ -53,22 +68,57 @@ class CatalogController extends Controller
 
     public function locations(): Response
     {
+        $seo = $this->resolvePageSeo(
+            PageSeo::PAGE_LOCATIONS,
+            'Locations Catalog',
+            'All available photo locations in Belgorod.',
+        );
+
         $locations = Location::query()
             ->with('category')
             ->where('is_active', true)
+            ->whereNotNull('slug')
             ->orderBy('name')
             ->get()
             ->map(fn (Location $location): array => [
                 'id' => $location->id,
                 'name' => $location->name,
+                'slug' => $location->slug,
                 'category' => $location->category?->name,
                 'image_url' => $location->image_url,
+                'description' => $location->description,
+                'url' => route('locations.show', ['slug' => $location->slug]),
             ]);
 
         return Inertia::render('Locations', [
             'locations' => $locations,
-            'metaTitle' => 'Locations Catalog',
-            'metaDescription' => 'All available photo locations in Belgorod.',
+            'metaTitle' => $seo['metaTitle'],
+            'metaDescription' => $seo['metaDescription'],
+        ]);
+    }
+
+    public function locationShow(string $slug): Response
+    {
+        $location = Location::query()
+            ->where('slug', $slug)
+            ->where('is_active', true)
+            ->with('category:id,name,slug')
+            ->firstOrFail();
+
+        return Inertia::render('LocationShow', [
+            'location' => [
+                'name' => $location->name,
+                'slug' => $location->slug,
+                'description' => $location->description,
+                'image_url' => $location->image_url,
+                'category' => $location->category?->name,
+                'category_slug' => $location->category?->slug,
+                'example_photos' => $location->example_photo_urls,
+                'url' => route('locations.show', ['slug' => $location->slug]),
+            ],
+            'metaTitle' => $location->seo_title ?: "{$location->name} - photo sessions in Belgorod",
+            'metaDescription' => $location->seo_description
+                ?: ($location->description ?: "Location {$location->name} for photo sessions in Belgorod."),
         ]);
     }
 
@@ -119,8 +169,9 @@ class CatalogController extends Controller
             }
         }
 
-        $examples = $category->examples()
+        $exampleCards = $category->examples()
             ->where('is_active', true)
+            ->whereHas('latestActivePhoto')
             ->with([
                 'latestActivePhoto',
                 'photos' => fn ($query) => $query
@@ -152,7 +203,9 @@ class CatalogController extends Controller
             ->orderBy('title')
             ->get()
             ->map(fn ($example): array => [
-                'id' => $example->id,
+                'id' => "example-{$example->id}",
+                'example_id' => $example->id,
+                'photo_id' => null,
                 'title' => $example->title,
                 'summary' => $example->summary,
                 'mood' => $example->mood,
@@ -173,6 +226,7 @@ class CatalogController extends Controller
             ->select([
                 'id',
                 'name',
+                'slug',
                 'photo_path',
                 'filter_option_keys',
             ])
@@ -189,7 +243,11 @@ class CatalogController extends Controller
             ->map(fn (Location $location): array => [
                 'id' => $location->id,
                 'name' => $location->name,
+                'slug' => $location->slug,
                 'image_url' => $location->image_url,
+                'url' => filled($location->slug)
+                    ? route('locations.show', ['slug' => $location->slug])
+                    : null,
                 'filter_option_labels' => collect(
                     CategoryFilterSchema::filterSelected($category->filter_groups, $location->filter_option_keys),
                 )
@@ -198,9 +256,54 @@ class CatalogController extends Controller
                     ->all(),
             ]);
 
+        $standalonePhotoCards = $category->photos()
+            ->where('is_active', true)
+            ->whereNull('example_id')
+            ->whereNotNull('path')
+            ->select([
+                'id',
+                'title',
+                'path',
+                'filter_option_keys',
+            ])
+            ->when(
+                $activeFilterOptionKeys !== [],
+                function (Builder $query) use ($activeFilterOptionKeys): void {
+                    foreach ($activeFilterOptionKeys as $optionKey) {
+                        $query->whereJsonContains('filter_option_keys', $optionKey);
+                    }
+                },
+            )
+            ->orderByDesc('id')
+            ->get()
+            ->map(fn (Photo $photo): array => [
+                'id' => "photo-{$photo->id}",
+                'example_id' => null,
+                'photo_id' => $photo->id,
+                'title' => $photo->title,
+                'summary' => null,
+                'mood' => null,
+                'location_hint' => null,
+                'season_hint' => null,
+                'clothing_hint' => null,
+                'image_url' => $photo->url,
+                'filter_option_labels' => collect(
+                    CategoryFilterSchema::filterSelected($category->filter_groups, $photo->filter_option_keys),
+                )
+                    ->map(fn (string $optionKey): string => $filterLabelsByKey[$optionKey] ?? $optionKey)
+                    ->values()
+                    ->all(),
+            ]);
+
+        $examples = $exampleCards
+            ->concat($standalonePhotoCards)
+            ->sortBy('title', SORT_NATURAL | SORT_FLAG_CASE)
+            ->values();
+
         return Inertia::render('CategoryShow', [
             'category' => [
                 'name' => $category->name,
+                'title' => $category->title,
                 'slug' => $category->slug,
                 'description' => $category->description,
             ],
@@ -228,5 +331,23 @@ class CatalogController extends Controller
             'metaTitle' => $category->seo_title ?: $category->name,
             'metaDescription' => $category->seo_description ?: ($category->description ?: 'Photo session category page.'),
         ]);
+    }
+
+    /**
+     * @return array{metaTitle: string, metaDescription: string}
+     */
+    private function resolvePageSeo(
+        string $pageKey,
+        string $defaultTitle,
+        string $defaultDescription,
+    ): array {
+        $seo = PageSeo::query()
+            ->where('page_key', $pageKey)
+            ->first();
+
+        return [
+            'metaTitle' => $seo?->seo_title ?: $defaultTitle,
+            'metaDescription' => $seo?->seo_description ?: $defaultDescription,
+        ];
     }
 }

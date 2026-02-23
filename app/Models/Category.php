@@ -14,6 +14,7 @@ class Category extends Model
 
     protected $fillable = [
         'name',
+        'title',
         'slug',
         'description',
         'filter_groups',
@@ -43,6 +44,11 @@ class Category extends Model
     public function locations(): HasMany
     {
         return $this->hasMany(Location::class);
+    }
+
+    public function photos(): HasMany
+    {
+        return $this->hasMany(Photo::class);
     }
 
     protected static function booted(): void
