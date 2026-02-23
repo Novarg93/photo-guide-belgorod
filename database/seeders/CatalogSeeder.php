@@ -15,10 +15,14 @@ class CatalogSeeder extends Seeder
     {
         $this->call([
             PageSeoSeeder::class,
+            LegalPageSeeder::class,
             CategorySeeder::class,
             ExampleSeeder::class,
             PhotoSeeder::class,
             LocationSeeder::class,
+            PhotographerSeeder::class,
+            BlogSeeder::class,
+            FaqSeeder::class,
         ]);
 
         Category::query()

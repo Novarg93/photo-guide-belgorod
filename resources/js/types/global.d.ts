@@ -18,6 +18,11 @@ declare module '@inertiajs/core' {
         sharedPageProps: {
             name: string;
             auth: Auth;
+            legalPages: Array<{
+                title: string;
+                slug: string;
+                url: string;
+            }>;
             sidebarOpen: boolean;
             [key: string]: unknown;
         };

@@ -1,8 +1,20 @@
 ﻿<script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { catalog, home } from '@/routes';
+
+interface LegalPageLink {
+    title: string;
+    slug: string;
+    url: string;
+}
+
+const page = usePage();
+const legalPages = computed(
+    () => (page.props.legalPages ?? []) as LegalPageLink[],
+);
 </script>
 
 <template>
@@ -20,6 +32,12 @@ import { catalog, home } from '@/routes';
                 <Button variant="ghost" size="sm" as-child>
                     <Link :href="catalog()">Catalog</Link>
                 </Button>
+                <template v-for="legalPage in legalPages" :key="legalPage.slug">
+                    <Separator orientation="vertical" class="h-5" />
+                    <Button variant="ghost" size="sm" as-child>
+                        <Link :href="legalPage.url">{{ legalPage.title }}</Link>
+                    </Button>
+                </template>
                 <Separator orientation="vertical" class="h-5" />
                 <Button variant="ghost" size="sm" as-child>
                     <a href="/admin">Admin</a>

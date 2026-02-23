@@ -1,6 +1,6 @@
 ﻿<script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { LayoutGrid, MapPin, Menu } from 'lucide-vue-next';
+import { BookOpen, Camera, CircleHelp, LayoutGrid, Mail, MapPin, Menu } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
@@ -54,9 +54,29 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
+        title: 'About Us',
+        href: '/about-us',
+        icon: CircleHelp,
+    },
+    {
+        title: 'Contact Us',
+        href: '/contact-us',
+        icon: Mail,
+    },
+    {
         title: 'Locations',
         href: locations(),
         icon: MapPin,
+    },
+    {
+        title: 'Photographers',
+        href: '/photographers',
+        icon: Camera,
+    },
+    {
+        title: 'Blog',
+        href: '/blogs',
+        icon: BookOpen,
     },
 ];
 </script>

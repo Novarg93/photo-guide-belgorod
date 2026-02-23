@@ -2,12 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreContactInquiryRequest;
+use App\Models\Blog;
 use App\Models\Category;
+use App\Models\ContactInquiry;
+use App\Models\Faq;
+use App\Models\LegalPage;
 use App\Models\Location;
 use App\Models\PageSeo;
 use App\Models\Photo;
+use App\Models\Photographer;
 use App\Support\CategoryFilterSchema;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -22,7 +29,85 @@ class CatalogController extends Controller
             'Choose a photo session category in Belgorod and continue to the next planning step.',
         );
 
+        $categories = Category::query()
+            ->select(['id', 'name', 'title', 'slug', 'description'])
+            ->where('is_active', true)
+            ->whereNotNull('slug')
+            ->orderBy('name')
+            ->limit(4)
+            ->get()
+            ->map(fn (Category $category): array => [
+                'id' => $category->id,
+                'name' => $category->name,
+                'title' => $category->title,
+                'description' => $category->description,
+                'url' => route('categories.show', ['slug' => $category->slug]),
+            ]);
+
+        $locations = Location::query()
+            ->select(['id', 'name', 'slug', 'description', 'photo_path'])
+            ->where('is_active', true)
+            ->whereNotNull('slug')
+            ->orderBy('name')
+            ->limit(5)
+            ->get()
+            ->map(fn (Location $location): array => [
+                'id' => $location->id,
+                'name' => $location->name,
+                'description' => $location->description,
+                'image_url' => $location->image_url,
+                'url' => route('locations.show', ['slug' => $location->slug]),
+            ]);
+
+        $photographers = Photographer::query()
+            ->select(['id', 'name', 'url', 'image_path', 'description'])
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->limit(5)
+            ->get()
+            ->map(fn (Photographer $photographer): array => [
+                'id' => $photographer->id,
+                'name' => $photographer->name,
+                'url' => $photographer->url,
+                'image_url' => $photographer->image_url,
+                'description' => $photographer->description,
+            ]);
+
+        $blogs = Blog::query()
+            ->select(['id', 'title', 'slug', 'cover_image', 'excerpt', 'published_at'])
+            ->where('is_active', true)
+            ->whereNotNull('slug')
+            ->orderByDesc('published_at')
+            ->orderByDesc('id')
+            ->limit(4)
+            ->get()
+            ->map(fn (Blog $blog): array => [
+                'id' => $blog->id,
+                'title' => $blog->title,
+                'excerpt' => $blog->excerpt,
+                'image_url' => $blog->cover_url,
+                'published_at' => $blog->published_at?->toDateString(),
+                'url' => route('blogs.show', ['slug' => $blog->slug]),
+            ]);
+
+        $faqs = Faq::query()
+            ->select(['id', 'question', 'answer', 'sort_order'])
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get()
+            ->map(fn (Faq $faq): array => [
+                'id' => $faq->id,
+                'question' => $faq->question,
+                'answer' => $faq->answer,
+            ]);
+
         return Inertia::render('Welcome', [
+            'categories' => $categories,
+            'locations' => $locations,
+            'photographers' => $photographers,
+            'blogs' => $blogs,
+            'faqs' => $faqs,
             'metaTitle' => $seo['metaTitle'],
             'metaDescription' => $seo['metaDescription'],
         ]);
@@ -58,11 +143,53 @@ class CatalogController extends Controller
         ]);
     }
 
+    public function about(): Response
+    {
+        return Inertia::render('AboutUs', [
+            'metaTitle' => 'About Us',
+            'metaDescription' => 'Learn why Photo Guide Belgorod was created, what problem it solves, and where the project is going.',
+        ]);
+    }
+
+    public function contact(): Response
+    {
+        return Inertia::render('ContactUs', [
+            'metaTitle' => 'Contact Us',
+            'metaDescription' => 'Send a request and we will get back to you as soon as possible.',
+        ]);
+    }
+
+    public function contactStore(StoreContactInquiryRequest $request): RedirectResponse
+    {
+        ContactInquiry::query()->create($request->validated());
+
+        return to_route('contact');
+    }
+
     public function copyright(): Response
     {
         return Inertia::render('Copyright', [
             'metaTitle' => 'Copyright and Photo Sources',
             'metaDescription' => 'Information about photo sources and content removal requests.',
+        ]);
+    }
+
+    public function legalShow(string $slug): Response
+    {
+        $page = LegalPage::query()
+            ->where('slug', $slug)
+            ->where('is_active', true)
+            ->firstOrFail();
+
+        return Inertia::render('LegalPageShow', [
+            'page' => [
+                'title' => $page->title,
+                'slug' => $page->slug,
+                'excerpt' => $page->excerpt,
+                'content' => $page->content,
+            ],
+            'metaTitle' => $page->seo_title ?: $page->title,
+            'metaDescription' => $page->seo_description ?: ($page->excerpt ?: 'Legal information page.'),
         ]);
     }
 
@@ -94,6 +221,75 @@ class CatalogController extends Controller
             'locations' => $locations,
             'metaTitle' => $seo['metaTitle'],
             'metaDescription' => $seo['metaDescription'],
+        ]);
+    }
+
+    public function photographers(): Response
+    {
+        $photographers = Photographer::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get()
+            ->map(fn (Photographer $photographer): array => [
+                'id' => $photographer->id,
+                'name' => $photographer->name,
+                'url' => $photographer->url,
+                'image_url' => $photographer->image_url,
+                'description' => $photographer->description,
+            ]);
+
+        return Inertia::render('Photographers', [
+            'photographers' => $photographers,
+            'metaTitle' => 'Photographers Catalog',
+            'metaDescription' => 'Browse photographers in Belgorod and check their portfolios.',
+        ]);
+    }
+
+    public function blogs(): Response
+    {
+        $blogs = Blog::query()
+            ->select(['id', 'title', 'slug', 'cover_image', 'excerpt', 'published_at'])
+            ->where('is_active', true)
+            ->whereNotNull('slug')
+            ->orderByDesc('published_at')
+            ->orderByDesc('id')
+            ->get()
+            ->map(fn (Blog $blog): array => [
+                'id' => $blog->id,
+                'title' => $blog->title,
+                'excerpt' => $blog->excerpt,
+                'image_url' => $blog->cover_url,
+                'published_at' => $blog->published_at?->toDateString(),
+                'url' => route('blogs.show', ['slug' => $blog->slug]),
+            ]);
+
+        return Inertia::render('Blogs', [
+            'blogs' => $blogs,
+            'metaTitle' => 'Blog',
+            'metaDescription' => 'Tips and guides for better photo sessions in Belgorod.',
+        ]);
+    }
+
+    public function blogShow(string $slug): Response
+    {
+        $blog = Blog::query()
+            ->where('slug', $slug)
+            ->where('is_active', true)
+            ->firstOrFail();
+
+        return Inertia::render('BlogShow', [
+            'blog' => [
+                'id' => $blog->id,
+                'title' => $blog->title,
+                'slug' => $blog->slug,
+                'excerpt' => $blog->excerpt,
+                'content' => $blog->content,
+                'image_url' => $blog->cover_url,
+                'published_at' => $blog->published_at?->toDateString(),
+                'url' => route('blogs.show', ['slug' => $blog->slug]),
+            ],
+            'metaTitle' => $blog->seo_title ?: $blog->title,
+            'metaDescription' => $blog->seo_description ?: ($blog->excerpt ?: 'Blog article from Photo Guide Belgorod.'),
         ]);
     }
 
