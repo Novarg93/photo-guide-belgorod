@@ -1,0 +1,12 @@
+@'
+.git
+node_modules
+vendor
+bootstrap/cache/*.php
+storage/*.key
+storage/logs
+storage/framework/cache
+storage/framework/sessions
+storage/framework/views
+.env
+'@ | Set-Content -Encoding UTF8 .dockerignore
