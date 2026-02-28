@@ -36,7 +36,7 @@ return new class extends Migration
 
             $fallbackTitle = pathinfo((string) $photo->path, PATHINFO_FILENAME);
             if ($fallbackTitle === '') {
-                $fallbackTitle = 'Photo '.$photo->id;
+                $fallbackTitle = 'Photo ' . $photo->id;
             }
 
             DB::table('photos')
@@ -50,7 +50,7 @@ return new class extends Migration
         Schema::table('photos', function (Blueprint $table) {
             $table->string('title')->nullable(false)->change();
             $table->index('title');
-            $table->foreignId('category_id')->nullable(false)->change();
+            // category_id остаётся nullable, потому что FK = nullOnDelete()
         });
 
         Schema::table('photos', function (Blueprint $table) {
