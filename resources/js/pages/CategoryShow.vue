@@ -443,33 +443,21 @@ const setBriefColorStyle = (value: string): void => {
                 <article
                     v-for="example in examples"
                     :key="example.id"
-                    class="group relative cursor-pointer overflow-hidden rounded-2xl border bg-zinc-100"
+                    class="group relative cursor-pointer overflow-hidden rounded-2xl border border-zinc-200 bg-white transition"
                     :class="[
                         isExampleSelected(example.id)
                             ? 'border-zinc-900 ring-2 ring-zinc-900/60'
-                            : 'border-zinc-200',
+                            : 'hover:border-zinc-300',
                     ]"
                     @click="toggleExampleSelection(example.id)"
                 >
-                    <div class="aspect-4/5 overflow-hidden">
+                    <div class="aspect-16/10 overflow-hidden bg-zinc-100">
                         <img
                             :src="example.image_url"
                             :alt="example.title"
                             class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                             loading="lazy"
                         />
-                    </div>
-
-                    <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/85 via-black/35 to-transparent"></div>
-
-                    <div class="absolute left-3 top-3 flex max-w-[80%] flex-wrap gap-1.5">
-                        <Badge
-                            v-for="label in example.filter_option_labels.slice(0, 3)"
-                            :key="`${example.id}-${label}`"
-                            class="bg-white/90 text-zinc-900"
-                        >
-                            {{ label }}
-                        </Badge>
                     </div>
 
                     <div
@@ -479,10 +467,42 @@ const setBriefColorStyle = (value: string): void => {
                         <Check class="h-4 w-4" />
                     </div>
 
-                    <div class="absolute inset-x-0 bottom-0 p-4">
-                        <h2 class="line-clamp-2 text-lg font-semibold text-white">
-                            {{ example.title }}
-                        </h2>
+                    <div class="space-y-3 p-4">
+                        <div class="space-y-2">
+                            <h2 class="line-clamp-2 text-lg font-semibold text-zinc-900">
+                                {{ example.title }}
+                            </h2>
+
+                            <p v-if="example.summary" class="line-clamp-2 text-sm leading-relaxed text-zinc-600">
+                                {{ example.summary }}
+                            </p>
+
+                            <p
+                                v-else-if="example.location_hint || example.season_hint || example.clothing_hint"
+                                class="line-clamp-2 text-sm leading-relaxed text-zinc-600"
+                            >
+                                {{
+                                    [example.location_hint, example.season_hint, example.clothing_hint]
+                                        .filter((value) => value)
+                                        .join(' • ')
+                                }}
+                            </p>
+                        </div>
+
+                        <div v-if="example.filter_option_labels.length > 0" class="flex flex-wrap gap-1.5">
+                            <Badge
+                                v-for="label in example.filter_option_labels.slice(0, 4)"
+                                :key="`${example.id}-${label}`"
+                                variant="secondary"
+                                class="bg-zinc-100 text-zinc-800"
+                            >
+                                {{ label }}
+                            </Badge>
+                        </div>
+
+                        <p v-else class="text-sm text-zinc-500">
+                            Matching tags will appear here once filters are assigned.
+                        </p>
                     </div>
                 </article>
             </div>

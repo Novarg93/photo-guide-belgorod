@@ -3,6 +3,10 @@
 use App\Models\Category;
 use App\Models\Example;
 use App\Models\Photo;
+use App\Support\CategoryFilterSchema;
+use Database\Seeders\CategorySeeder;
+use Database\Seeders\ExampleSeeder;
+use Database\Seeders\PhotoSeeder;
 use Inertia\Testing\AssertableInertia as Assert;
 
 it('shows active examples on category page', function () {
@@ -293,4 +297,71 @@ it('shows standalone active photos for category', function () {
             ->where('examples.0.title', 'Standalone Family Photo')
             ->where('examples.0.example_id', null)
             ->where('examples.0.image_url', fn (string $url): bool => str_contains($url, '/storage/photos/family-standalone.svg')));
+});
+
+it('returns filter labels for standalone photo cards on category page', function () {
+    $category = Category::factory()->create([
+        'slug' => 'family',
+        'is_active' => true,
+        'filter_groups' => [
+            [
+                'name' => 'Mood',
+                'options' => [
+                    ['name' => 'Warm'],
+                    ['name' => 'Calm'],
+                ],
+            ],
+        ],
+    ]);
+
+    Photo::factory()->create([
+        'category_id' => $category->id,
+        'example_id' => null,
+        'title' => 'Standalone warm photo',
+        'path' => 'photos/standalone-warm.svg',
+        'filter_option_keys' => ['mood.warm', 'mood.calm'],
+        'is_active' => true,
+    ]);
+
+    $this->get(route('categories.show', ['slug' => $category->slug]))
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('CategoryShow')
+            ->where('examples.0.title', 'Standalone warm photo')
+            ->where('examples.0.filter_option_labels', ['Mood: Warm', 'Mood: Calm']));
+});
+
+it('seeds at least ten active photos for each category filter option', function () {
+    $this->seed([
+        CategorySeeder::class,
+        ExampleSeeder::class,
+        PhotoSeeder::class,
+    ]);
+
+    Category::query()
+        ->select(['id', 'filter_groups'])
+        ->get()
+        ->each(function (Category $category): void {
+            $allowedFilterKeys = CategoryFilterSchema::allowedOptionKeys($category->filter_groups);
+            $coverage = array_fill_keys($allowedFilterKeys, 0);
+
+            Photo::query()
+                ->where('category_id', $category->id)
+                ->where('is_active', true)
+                ->select(['filter_option_keys'])
+                ->get()
+                ->each(function (Photo $photo) use (&$coverage): void {
+                    foreach ($photo->filter_option_keys ?? [] as $filterKey) {
+                        if (array_key_exists($filterKey, $coverage)) {
+                            $coverage[$filterKey]++;
+                        }
+                    }
+                });
+
+            expect($coverage)->not->toBeEmpty();
+
+            foreach ($coverage as $count) {
+                expect($count)->toBeGreaterThanOrEqual(10);
+            }
+        });
 });

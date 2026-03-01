@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Category;
 use App\Models\Photo;
+use App\Support\CategoryFilterSchema;
 use Illuminate\Database\Seeder;
 
 class CatalogSeeder extends Seeder
@@ -26,9 +27,11 @@ class CatalogSeeder extends Seeder
         ]);
 
         Category::query()
-            ->select(['id', 'name'])
+            ->select(['id', 'name', 'filter_groups'])
             ->get()
             ->each(function (Category $category): void {
+                $allowedFilterKeys = CategoryFilterSchema::allowedOptionKeys($category->filter_groups);
+
                 foreach (range(1, 4) as $slot) {
                     Photo::query()->updateOrCreate(
                         [
@@ -37,7 +40,7 @@ class CatalogSeeder extends Seeder
                             'title' => "{$category->name} Standalone {$slot}",
                         ],
                         [
-                            'filter_option_keys' => [],
+                            'filter_option_keys' => $this->buildMixedFilterKeys($allowedFilterKeys, $slot),
                             'path' => 'photos/placeholder.svg',
                             'source_type' => 'own',
                             'source_url' => null,
@@ -49,5 +52,25 @@ class CatalogSeeder extends Seeder
                     );
                 }
             });
+    }
+
+    /**
+     * @param  array<int, string>  $allowedFilterKeys
+     * @return array<int, string>
+     */
+    private function buildMixedFilterKeys(array $allowedFilterKeys, int $offset): array
+    {
+        if ($allowedFilterKeys === []) {
+            return [];
+        }
+
+        $desiredCount = min(count($allowedFilterKeys), min(4, 2 + ($offset % 3)));
+        $normalizedOffset = $offset % count($allowedFilterKeys);
+        $rotatedFilterKeys = array_values([
+            ...array_slice($allowedFilterKeys, $normalizedOffset),
+            ...array_slice($allowedFilterKeys, 0, $normalizedOffset),
+        ]);
+
+        return array_values(array_slice($rotatedFilterKeys, 0, $desiredCount));
     }
 }

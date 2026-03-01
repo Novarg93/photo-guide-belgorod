@@ -6,7 +6,6 @@ use App\Models\Category;
 use App\Models\Example;
 use App\Support\CategoryFilterSchema;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
@@ -87,17 +86,11 @@ class ExampleSeeder extends Seeder
             foreach ($exampleBlueprints as $index => $blueprint) {
                 $title = "{$category->name}: {$blueprint['title']}";
                 $slug = Str::slug("{$category->slug}-example-{$index}");
-                $mood = $moodOptions[array_rand($moodOptions)];
-                $locationHint = $locationPool[array_rand($locationPool)];
-                $seasonHint = $seasonPool[array_rand($seasonPool)];
-                $clothingHint = $clothingPool[array_rand($clothingPool)];
-                $presetFilters = [];
-
-                if ($allowedFilterKeys !== []) {
-                    $shuffledFilterKeys = $allowedFilterKeys;
-                    shuffle($shuffledFilterKeys);
-                    $presetFilters = Arr::take($shuffledFilterKeys, random_int(1, min(3, count($shuffledFilterKeys))));
-                }
+                $mood = $moodOptions[$index % count($moodOptions)];
+                $locationHint = $locationPool[$index % count($locationPool)];
+                $seasonHint = $seasonPool[$index % count($seasonPool)];
+                $clothingHint = $clothingPool[$index % count($clothingPool)];
+                $presetFilters = $this->buildPresetFilters($allowedFilterKeys, $index);
 
                 Example::query()->updateOrCreate(
                     ['slug' => $slug],
@@ -115,5 +108,41 @@ class ExampleSeeder extends Seeder
                 );
             }
         });
+    }
+
+    /**
+     * @param  array<int, string>  $allowedFilterKeys
+     * @return array<int, string>
+     */
+    private function buildPresetFilters(array $allowedFilterKeys, int $offset): array
+    {
+        if ($allowedFilterKeys === []) {
+            return [];
+        }
+
+        $desiredCount = min(count($allowedFilterKeys), max(1, min(4, 2 + ($offset % 3))));
+        $rotatedFilterKeys = $this->rotateFilterKeys($allowedFilterKeys, $offset);
+
+        return array_values(array_slice($rotatedFilterKeys, 0, $desiredCount));
+    }
+
+    /**
+     * @param  array<int, string>  $filterKeys
+     * @return array<int, string>
+     */
+    private function rotateFilterKeys(array $filterKeys, int $offset): array
+    {
+        $total = count($filterKeys);
+
+        if ($total <= 1) {
+            return $filterKeys;
+        }
+
+        $normalizedOffset = $offset % $total;
+
+        return array_values([
+            ...array_slice($filterKeys, $normalizedOffset),
+            ...array_slice($filterKeys, 0, $normalizedOffset),
+        ]);
     }
 }

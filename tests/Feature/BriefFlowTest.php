@@ -230,6 +230,7 @@ it('shows selected standalone photos when brief has selected photo ids', functio
         'example_id' => null,
         'title' => 'Selected Standalone',
         'path' => 'photos/selected-standalone.svg',
+        'filter_option_keys' => ['mood.warm'],
         'is_active' => true,
     ]);
 
@@ -253,6 +254,7 @@ it('shows selected standalone photos when brief has selected photo ids', functio
             ->component('BriefShow')
             ->has('examples', 1)
             ->where('examples.0.title', 'Selected Standalone')
+            ->where('examples.0.filter_option_labels', ['Mood: Warm'])
             ->where('examples.0.image_url', fn (string $url): bool => str_contains($url, '/storage/photos/selected-standalone.svg')));
 });
 
@@ -422,4 +424,57 @@ it('filters recommended locations by selected cards when active filter keys are 
             ->where('locationFilterOptionLabels.0', 'Mood: Warm')
             ->has('locations', 1)
             ->where('locations.0.name', 'Warm Location'));
+});
+
+it('returns filter labels for brief example cards in the same format as catalog', function () {
+    $category = Category::factory()->create([
+        'name' => 'Family',
+        'slug' => 'family',
+        'is_active' => true,
+        'filter_groups' => [
+            [
+                'name' => 'Mood',
+                'options' => [
+                    ['name' => 'Warm'],
+                    ['name' => 'Calm'],
+                ],
+            ],
+        ],
+    ]);
+
+    $selectedExample = Example::factory()->create([
+        'category_id' => $category->id,
+        'title' => 'Selected Warm Example',
+        'slug' => 'selected-warm-example',
+        'is_active' => true,
+    ]);
+
+    Photo::factory()->create([
+        'category_id' => $category->id,
+        'example_id' => $selectedExample->id,
+        'path' => 'photos/selected-warm-example.svg',
+        'filter_option_keys' => ['mood.warm', 'mood.calm'],
+        'is_active' => true,
+    ]);
+
+    $brief = Brief::query()->create([
+        'category_id' => $category->id,
+        'public_token' => '66666666-6666-4666-8666-666666666666',
+        'filters' => [
+            'mood' => null,
+            'season' => null,
+            'location' => null,
+            'clothing' => null,
+            'active_filter_option_keys' => [],
+            'selected_photo_ids' => [],
+        ],
+        'selected_example_ids' => [$selectedExample->id],
+    ]);
+
+    $this->get(route('brief.show', ['token' => $brief->public_token]))
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('BriefShow')
+            ->where('examples.0.title', 'Selected Warm Example')
+            ->where('examples.0.filter_option_labels', ['Mood: Warm', 'Mood: Calm']));
 });

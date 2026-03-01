@@ -132,6 +132,7 @@ class BriefController extends Controller
             ->unique()
             ->values()
             ->all();
+        $filterLabelsByKey = CategoryFilterSchema::flattenOptions($brief->category->filter_groups);
 
         if ($selectedExampleIds->isNotEmpty() || $selectedPhotoIds->isNotEmpty()) {
             $selectedExamplesById = $brief->category->examples()
@@ -155,7 +156,7 @@ class BriefController extends Controller
                 ->filter();
 
             $selectedPhotosById = $brief->category->photos()
-                ->select(['id', 'title', 'path'])
+                ->select(['id', 'title', 'path', 'filter_option_keys'])
                 ->where('is_active', true)
                 ->whereNull('example_id')
                 ->whereIn('id', $selectedPhotoIds)
@@ -175,6 +176,19 @@ class BriefController extends Controller
                     'location_hint' => $example->location_hint,
                     'season_hint' => $example->season_hint,
                     'clothing_hint' => $example->clothing_hint,
+                    'filter_option_labels' => $brief->category->photos()
+                        ->select(['id', 'filter_option_keys'])
+                        ->where('is_active', true)
+                        ->where('example_id', $example->id)
+                        ->get()
+                        ->flatMap(fn (Photo $photo): array => CategoryFilterSchema::filterSelected(
+                            $brief->category->filter_groups,
+                            $photo->filter_option_keys,
+                        ))
+                        ->unique()
+                        ->values()
+                        ->map(fn (string $optionKey): string => $filterLabelsByKey[$optionKey] ?? $optionKey)
+                        ->all(),
                     'image_url' => $example->image_url,
                 ])
                 ->concat(
@@ -186,6 +200,12 @@ class BriefController extends Controller
                         'location_hint' => null,
                         'season_hint' => null,
                         'clothing_hint' => null,
+                        'filter_option_labels' => collect(
+                            CategoryFilterSchema::filterSelected($brief->category->filter_groups, $photo->filter_option_keys),
+                        )
+                            ->map(fn (string $optionKey): string => $filterLabelsByKey[$optionKey] ?? $optionKey)
+                            ->values()
+                            ->all(),
                         'image_url' => $photo->url,
                     ]),
                 )
@@ -231,6 +251,19 @@ class BriefController extends Controller
                     'location_hint' => $example->location_hint,
                     'season_hint' => $example->season_hint,
                     'clothing_hint' => $example->clothing_hint,
+                    'filter_option_labels' => $brief->category->photos()
+                        ->select(['id', 'filter_option_keys'])
+                        ->where('is_active', true)
+                        ->where('example_id', $example->id)
+                        ->get()
+                        ->flatMap(fn (Photo $photo): array => CategoryFilterSchema::filterSelected(
+                            $brief->category->filter_groups,
+                            $photo->filter_option_keys,
+                        ))
+                        ->unique()
+                        ->values()
+                        ->map(fn (string $optionKey): string => $filterLabelsByKey[$optionKey] ?? $optionKey)
+                        ->all(),
                     'image_url' => $example->cover_url ?? $example->image_url,
                 ]);
 
@@ -257,6 +290,12 @@ class BriefController extends Controller
                     'location_hint' => null,
                     'season_hint' => null,
                     'clothing_hint' => null,
+                    'filter_option_labels' => collect(
+                        CategoryFilterSchema::filterSelected($brief->category->filter_groups, $photo->filter_option_keys),
+                    )
+                        ->map(fn (string $optionKey): string => $filterLabelsByKey[$optionKey] ?? $optionKey)
+                        ->values()
+                        ->all(),
                     'image_url' => $photo->url,
                 ]);
 
@@ -266,7 +305,6 @@ class BriefController extends Controller
                 ->values();
         }
 
-        $filterLabelsByKey = CategoryFilterSchema::flattenOptions($brief->category->filter_groups);
         $locationFilterOptionLabels = collect($effectiveLocationFilterOptionKeys)
             ->map(fn (string $optionKey): string => $filterLabelsByKey[$optionKey] ?? $optionKey)
             ->values()

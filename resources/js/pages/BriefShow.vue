@@ -29,6 +29,7 @@ interface ExampleItem {
     location_hint: string | null;
     season_hint: string | null;
     clothing_hint: string | null;
+    filter_option_labels: string[];
     image_url: string;
 }
 
@@ -238,9 +239,9 @@ const copyBriefText = async (): Promise<void> => {
                 <article
                     v-for="example in examples"
                     :key="example.id"
-                    class="group relative overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-100"
+                    class="group overflow-hidden rounded-2xl border border-zinc-200 bg-white"
                 >
-                    <div class="aspect-4/5 overflow-hidden">
+                    <div class="aspect-16/10 overflow-hidden bg-zinc-100">
                         <img
                             :src="example.image_url"
                             :alt="example.title"
@@ -249,17 +250,40 @@ const copyBriefText = async (): Promise<void> => {
                         />
                     </div>
 
-                    <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/85 via-black/35 to-transparent"></div>
+                    <div class="space-y-3 p-4">
+                        <div class="space-y-2">
+                            <h2 class="line-clamp-2 text-lg font-semibold text-zinc-900">{{ example.title }}</h2>
 
-                    <div class="absolute left-3 top-3 flex flex-wrap gap-1.5">
-                        <Badge v-if="example.mood" class="bg-white/90 text-zinc-900">{{ example.mood }}</Badge>
-                        <Badge v-if="example.location_hint" variant="secondary" class="bg-white/80 text-zinc-900">
-                            {{ example.location_hint }}
-                        </Badge>
-                    </div>
+                            <p v-if="example.summary" class="line-clamp-2 text-sm leading-relaxed text-zinc-600">
+                                {{ example.summary }}
+                            </p>
 
-                    <div class="absolute inset-x-0 bottom-0 p-4">
-                        <h2 class="line-clamp-2 text-lg font-semibold text-white">{{ example.title }}</h2>
+                            <p
+                                v-else-if="example.location_hint || example.season_hint || example.clothing_hint"
+                                class="line-clamp-2 text-sm leading-relaxed text-zinc-600"
+                            >
+                                {{
+                                    [example.location_hint, example.season_hint, example.clothing_hint]
+                                        .filter((value) => value)
+                                        .join(' / ')
+                                }}
+                            </p>
+                        </div>
+
+                        <div v-if="example.filter_option_labels.length > 0" class="flex flex-wrap gap-1.5">
+                            <Badge
+                                v-for="label in example.filter_option_labels.slice(0, 4)"
+                                :key="`${example.id}-${label}`"
+                                variant="secondary"
+                                class="bg-zinc-100 text-zinc-800"
+                            >
+                                {{ label }}
+                            </Badge>
+                        </div>
+
+                        <p v-else class="text-sm text-zinc-500">
+                            Matching tags will appear here once filters are assigned.
+                        </p>
                     </div>
                 </article>
             </div>

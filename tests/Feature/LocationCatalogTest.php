@@ -2,6 +2,9 @@
 
 use App\Models\Category;
 use App\Models\Location;
+use App\Support\CategoryFilterSchema;
+use Database\Seeders\CategorySeeder;
+use Database\Seeders\LocationSeeder;
 use Inertia\Testing\AssertableInertia as Assert;
 
 it('shows all active locations on locations catalog page', function () {
@@ -102,4 +105,38 @@ it('shows location page with photo session examples array', function () {
             ->where('location.name', 'Park Pobedy Belgorod')
             ->has('location.example_photos', 2)
             ->where('metaTitle', 'Photo sessions in Park Pobedy Belgorod'));
+});
+
+it('seeds at least ten active locations for each category filter option', function () {
+    $this->seed([
+        CategorySeeder::class,
+        LocationSeeder::class,
+    ]);
+
+    Category::query()
+        ->select(['id', 'filter_groups'])
+        ->get()
+        ->each(function (Category $category): void {
+            $allowedFilterKeys = CategoryFilterSchema::allowedOptionKeys($category->filter_groups);
+            $coverage = array_fill_keys($allowedFilterKeys, 0);
+
+            Location::query()
+                ->where('category_id', $category->id)
+                ->where('is_active', true)
+                ->select(['filter_option_keys'])
+                ->get()
+                ->each(function (Location $location) use (&$coverage): void {
+                    foreach ($location->filter_option_keys ?? [] as $filterKey) {
+                        if (array_key_exists($filterKey, $coverage)) {
+                            $coverage[$filterKey]++;
+                        }
+                    }
+                });
+
+            expect($coverage)->not->toBeEmpty();
+
+            foreach ($coverage as $count) {
+                expect($count)->toBeGreaterThanOrEqual(10);
+            }
+        });
 });
