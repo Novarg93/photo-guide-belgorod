@@ -1,0 +1,10 @@
+FROM nginx:alpine
+
+# public из app-образа (тот же tag)
+ARG APP_IMAGE=ghcr.io/novarg93/photo-guide-belgorod:latest
+COPY --from=${APP_IMAGE} /var/www/public /var/www/public
+
+# nginx config
+COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+
+# (опционально) gzip/headers можно добавить позже

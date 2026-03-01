@@ -1,0 +1,45 @@
+name: Build & Push Docker images
+
+on:
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # build & push APP
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: |
+            ghcr.io/novarg93/photo-guide-belgorod:app-latest
+            ghcr.io/novarg93/photo-guide-belgorod:app-${{ github.sha }}
+
+      # build & push NGINX (копирует public из app-latest)
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.nginx
+          push: true
+          build-args: |
+            APP_IMAGE=ghcr.io/novarg93/photo-guide-belgorod:app-latest
+          tags: |
+            ghcr.io/novarg93/photo-guide-belgorod:nginx-latest
+            ghcr.io/novarg93/photo-guide-belgorod:nginx-${{ github.sha }}
