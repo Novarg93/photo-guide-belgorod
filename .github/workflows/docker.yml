@@ -29,16 +29,17 @@ jobs:
           file: Dockerfile
           push: true
           tags: |
-            APP_IMAGE=ghcr.io/novarg93/photo-guide-belgorod:app-${{ github.sha }}
+            ghcr.io/novarg93/photo-guide-belgorod:app-latest
+            ghcr.io/novarg93/photo-guide-belgorod:app-${{ github.sha }}
 
-      # build & push NGINX (копирует public из app-latest)
+      # build & push NGINX (копирует public из app-${{ github.sha }})
       - uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile.nginx
           push: true
           build-args: |
-            APP_IMAGE=ghcr.io/novarg93/photo-guide-belgorod:app-latest
+            APP_IMAGE=ghcr.io/novarg93/photo-guide-belgorod:app-${{ github.sha }}
           tags: |
             ghcr.io/novarg93/photo-guide-belgorod:nginx-latest
             ghcr.io/novarg93/photo-guide-belgorod:nginx-${{ github.sha }}
