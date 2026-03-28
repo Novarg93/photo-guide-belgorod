@@ -15,9 +15,9 @@ withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-    <AppShell variant="header">
-        <AppHeader :breadcrumbs="breadcrumbs" />
-        <AppContent class="px-4 py-6">
+    <AppShell class="relative" variant="header">
+        <AppHeader class="absolute inset-x-0 top-0 z-50" :breadcrumbs="breadcrumbs" />
+        <AppContent >
             <slot />
         </AppContent>
         <AppFooter />

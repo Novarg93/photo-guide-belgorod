@@ -4,6 +4,12 @@ import { useHead } from '@vueuse/head';
 import { Button } from '@/components/ui/button';
 import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue';
 import { catalog } from '@/routes';
+import Hero from '@/components/Hero.vue';
+import Categories from '@/components/Categories.vue';
+import Locations from '@/components/Locations.vue';
+import Photographers from '@/components/Photographers.vue';
+import Faq from '@/components/Faq.vue';
+
 
 const props = defineProps<{
     categories: Array<{
@@ -12,6 +18,7 @@ const props = defineProps<{
         title: string | null;
         description: string | null;
         url: string;
+        image: string | null;
     }>;
     locations: Array<{
         id: number;
@@ -54,7 +61,12 @@ useHead(() => ({
 
 <template>
     <AppHeaderLayout>
-        <section class="mx-auto w-full max-w-5xl py-12 md:py-20">
+        <Hero />
+        <Categories :categories="categories" />
+        <Locations :locations="locations" />
+        <Photographers />
+        <Faq :faqs="faqs" />
+        <!-- <section class="mx-auto w-full max-w-5xl py-12 md:py-20">
             <p class="mb-4 inline-flex rounded-full border border-zinc-200 bg-white/70 px-4 py-1 text-xs font-medium uppercase tracking-[0.2em] text-zinc-500">
                 Photo Guide Belgorod
             </p>
@@ -256,6 +268,6 @@ useHead(() => ({
                     <p class="mt-2 text-sm leading-relaxed text-zinc-600">{{ faq.answer }}</p>
                 </article>
             </div>
-        </section>
+        </section> -->
     </AppHeaderLayout>
 </template>

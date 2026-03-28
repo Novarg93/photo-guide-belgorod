@@ -10,6 +10,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
+use Filament\Forms\Components\FileUpload;
 
 class CategoryForm
 {
@@ -40,6 +41,15 @@ class CategoryForm
                     ->default(true),
                 Textarea::make('description')
                     ->rows(4)
+                    ->columnSpanFull(),
+
+                FileUpload::make('image_path')
+                    ->label('Category image')
+                    ->image()
+                    ->directory('categories')
+                    ->disk('public')
+                    ->visibility('public')
+                    ->imageEditor()
                     ->columnSpanFull(),
                 Repeater::make('filter_groups')
                     ->label('Filter groups')

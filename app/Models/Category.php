@@ -16,6 +16,7 @@ class Category extends Model
         'name',
         'title',
         'slug',
+        'image_path',
         'description',
         'filter_groups',
         'is_active',
@@ -51,6 +52,15 @@ class Category extends Model
         return $this->hasMany(Photo::class);
     }
 
+    public function getImageUrlAttribute(): ?string
+    {
+        if (! $this->image_path) {
+            return null;
+        }
+
+        return asset('storage/' . $this->image_path);
+    }
+
     protected static function booted(): void
     {
         static::saving(function (Category $category): void {
@@ -79,9 +89,9 @@ class Category extends Model
 
         while (
             static::query()
-                ->when($ignoreId, fn ($query) => $query->whereKeyNot($ignoreId))
-                ->where('slug', $slug)
-                ->exists()
+            ->when($ignoreId, fn($query) => $query->whereKeyNot($ignoreId))
+            ->where('slug', $slug)
+            ->exists()
         ) {
             $slug = "{$baseSlug}-{$counter}";
             $counter++;

@@ -122,7 +122,7 @@ class CatalogController extends Controller
         );
 
         $categories = Category::query()
-            ->select(['id', 'name', 'title', 'slug', 'description', 'filter_groups'])
+            ->select(['id', 'name', 'title', 'slug', 'description', 'image_path', 'filter_groups'])
             ->where('is_active', true)
             ->orderBy('name')
             ->get()
@@ -132,6 +132,7 @@ class CatalogController extends Controller
                 'title' => $category->title,
                 'slug' => $category->slug,
                 'description' => $category->description,
+                'image' => $category->image_url,
                 'filter_groups' => CategoryFilterSchema::normalize($category->filter_groups),
                 'url' => route('categories.show', ['slug' => $category->slug]),
             ]);

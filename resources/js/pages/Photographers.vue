@@ -1,7 +1,9 @@
-﻿<script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
-import { useHead } from '@vueuse/head';
-import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue';
+<script setup lang="ts">
+import { computed } from 'vue'
+import { Link } from '@inertiajs/vue3'
+import { useHead } from '@vueuse/head'
+import { ArrowRight, Camera, CircleCheck, ExternalLink, Sparkles } from 'lucide-vue-next'
+import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue'
 
 interface PhotographerCard {
     id: number;
@@ -15,68 +17,219 @@ const props = defineProps<{
     photographers: PhotographerCard[];
     metaTitle: string;
     metaDescription: string;
-}>();
+}>()
+
+const linkedProfilesCount = computed<number>(() => {
+    return props.photographers.filter((photographer) => photographer.url).length
+})
+
+const photographerHighlights = [
+    {
+        title: 'Direct profile links',
+        description: 'Move from shortlist to an external profile without searching manually.',
+    },
+    {
+        title: 'Fast comparison',
+        description: 'Review names, descriptions, and preview images in one consistent grid.',
+    },
+    {
+        title: 'Planning flow',
+        description: 'Use the catalog as a first pass before choosing a location or building a brief.',
+    },
+]
+
+const photographerDescription = (photographer: PhotographerCard): string => {
+    if (photographer.description) {
+        return photographer.description
+    }
+
+    return 'Photographer profile available for review in the Belgorod catalog.'
+}
 
 useHead(() => ({
     title: props.metaTitle,
     meta: [
         { key: 'description', name: 'description', content: props.metaDescription },
     ],
-}));
+}))
 </script>
 
 <template>
     <AppHeaderLayout>
-        <section class="mx-auto w-full max-w-7xl py-8">
-            <Link href="/catalog" class="text-sm text-zinc-500 transition hover:text-zinc-900">Back to catalog</Link>
-
-            <h1 class="mt-4 text-3xl font-semibold tracking-tight text-zinc-900 md:text-4xl">
-                Photographers Catalog
-            </h1>
-
-            <p class="mt-3 max-w-2xl text-zinc-600">
-                Browse available photographers and contact them directly.
-            </p>
-
-            <div class="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                <article
-                    v-for="photographer in photographers"
-                    :key="photographer.id"
-                    class="overflow-hidden rounded-2xl border border-zinc-200 bg-white"
-                >
-                    <div class="aspect-16/10 overflow-hidden bg-zinc-100">
-                        <img
-                            :src="photographer.image_url"
-                            :alt="photographer.name"
-                            class="h-full w-full object-cover"
-                            loading="lazy"
-                        />
+        <section class="bg-[#f5f5f5] pt-32 pb-64 md:pb-80">
+            <div class="mx-auto max-w-7xl px-5">
+                <div class="relative overflow-hidden rounded-[32px] bg-card px-5 py-8 md:px-8 md:py-10">
+                    <div class="grid-overlay-hero">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
                     </div>
 
-                    <div class="space-y-2 p-4">
-                        <h2 class="text-lg font-semibold text-zinc-900">{{ photographer.name }}</h2>
-                        <p v-if="photographer.description" class="line-clamp-3 text-sm text-zinc-600">
-                            {{ photographer.description }}
-                        </p>
-
-                        <a
-                            v-if="photographer.url"
-                            :href="photographer.url"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="inline-flex text-sm font-medium text-zinc-900 underline underline-offset-4 transition hover:text-zinc-600"
+                    <div class="relative z-10">
+                        <Link
+                            href="/catalog"
+                            class="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/80 px-4 py-2 text-sm text-[#20243B] shadow-[0px_10px_24px_rgba(0,0,0,0.06)] backdrop-blur-sm"
                         >
-                            Open profile
-                        </a>
-                    </div>
-                </article>
-            </div>
+                            <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary">
+                                <Sparkles class="h-3.5 w-3.5" />
+                            </span>
+                            <span>Back to catalog</span>
+                        </Link>
 
-            <div
-                v-if="photographers.length === 0"
-                class="mt-8 rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-5 text-zinc-600"
-            >
-                Photographers catalog is empty.
+                        <div class="mt-7 grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
+                            <div>
+                                <h1 class="text-[#20243B]">
+                                    <span class="font-onest text-[38px] font-medium leading-none tracking-[-0.02em] md:text-[54px]">
+                                        Photographers
+                                    </span>
+                                    <span class="ml-2 font-playfair text-[44px] font-semibold italic leading-none tracking-[-0.02em] text-[#4252FF] md:text-[64px]">
+                                        Catalog
+                                    </span>
+                                </h1>
+
+                                <p class="mt-5 max-w-3xl text-sm leading-6 text-[#5C6079] md:text-base">
+                                    Browse available photographers, compare profiles, and open their public links directly from one page.
+                                </p>
+                            </div>
+
+                            <div class="rounded-[24px] bg-white p-5 shadow-[0px_18px_40px_rgba(20,23,45,0.08)]">
+                                <div class="grid gap-4 sm:grid-cols-2">
+                                    <div class="rounded-[20px] bg-[#F7F8FF] px-4 py-4">
+                                        <p class="font-onest text-sm font-medium text-[#A0A3B8]">Available photographers</p>
+                                        <div class="mt-3 flex items-end gap-3">
+                                            <span class="font-onest text-5xl font-medium leading-none text-[#20243B]">{{ photographers.length }}</span>
+                                            <span class="pb-1 text-sm text-[#5C6079]">profiles to review</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="rounded-[20px] bg-[#20243B] px-4 py-4 text-white">
+                                        <p class="font-onest text-sm font-medium text-white/60">Direct external links</p>
+                                        <div class="mt-3 flex items-end gap-3">
+                                            <span class="font-onest text-5xl font-medium leading-none">{{ linkedProfilesCount }}</span>
+                                            <span class="pb-1 text-sm text-white/70">ready to open</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 rounded-[18px] border border-[#E2E5F6] bg-white px-4 py-3 text-sm leading-6 text-[#303651]">
+                                    Use this page as a clean shortlist before opening external profile pages or moving further into your planning flow.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 grid gap-5 xl:grid-cols-[0.72fr_0.28fr]">
+                    <div
+                        v-if="photographers.length > 0"
+                        class="grid gap-5 sm:grid-cols-2"
+                    >
+                        <article
+                            v-for="photographer in photographers"
+                            :key="photographer.id"
+                            class="photographers-page-card group overflow-hidden rounded-[28px] bg-white p-4 shadow-[0px_18px_40px_rgba(20,23,45,0.08)]"
+                        >
+                            <div class="photographers-page-card-accent"></div>
+
+                            <div class="relative z-10">
+                                <div class="photographers-page-card-media rounded-[22px] border-b border-dashed border-black/8 bg-white p-2">
+                                    <div class="overflow-hidden rounded-[18px] bg-[#E8E8E8]">
+                                        <img
+                                            :src="photographer.image_url"
+                                            :alt="photographer.name"
+                                            class="photographers-page-card-image h-[220px] w-full object-cover"
+                                            loading="lazy"
+                                        >
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 flex items-start justify-between gap-4">
+                                    <div class="flex items-start gap-3">
+                                        <div class="photographers-page-card-icon flex h-11 w-11 shrink-0 items-center justify-center rounded-[16px] bg-primary text-white">
+                                            <Camera class="h-5 w-5" />
+                                        </div>
+
+                                        <div>
+                                            <h2 class="photographers-page-card-title font-onest text-[24px] font-medium leading-none text-[#20243B]">
+                                                {{ photographer.name }}
+                                            </h2>
+
+                                            <p class="mt-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#8A8FAF]">
+                                                Photographer profile
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="photographers-page-card-arrow flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#D9DCF3] text-[#4252FF]">
+                                        <ArrowRight class="h-4 w-4" />
+                                    </div>
+                                </div>
+
+                                <div class="mt-5 h-[1px] w-full bg-[repeating-linear-gradient(to_right,rgba(32,36,59,0.18)_0_16px,transparent_16px_28px)]"></div>
+
+                                <p class="photographers-page-card-description mt-5 text-sm leading-6 text-[#5C6079]">
+                                    {{ photographerDescription(photographer) }}
+                                </p>
+
+                                <div class="mt-5 flex flex-wrap items-center gap-3">
+                                    <a
+                                        v-if="photographer.url"
+                                        :href="photographer.url"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="photographers-page-card-link inline-flex items-center gap-2 rounded-full border border-[#D9DCF3] bg-white px-4 py-2 text-sm font-medium text-[#4252FF]"
+                                    >
+                                        <span>Open profile</span>
+                                        <ExternalLink class="h-4 w-4" />
+                                    </a>
+                                    <div
+                                        v-else
+                                        class="inline-flex items-center gap-2 rounded-full border border-black/8 bg-[#F7F8FF] px-4 py-2 text-sm font-medium text-[#8A8FAF]"
+                                    >
+                                        <span>Profile link unavailable</span>
+                                    </div>
+
+                                    <div class="inline-flex items-center gap-2 rounded-full border border-[#E2E5F6] bg-[#F7F8FF] px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#7A809E]">
+                                        <CircleCheck class="h-3.5 w-3.5" />
+                                        <span>Catalog preview</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+
+                    <div
+                        v-else
+                        class="rounded-[28px] bg-white p-6 shadow-[0px_18px_40px_rgba(20,23,45,0.08)]"
+                    >
+                        <p class="font-onest text-[24px] font-medium text-[#20243B]">Photographers catalog is empty.</p>
+                        <p class="mt-3 max-w-2xl text-sm leading-6 text-[#5C6079]">
+                            Add photographer entries in the admin panel and they will appear here in the public catalog.
+                        </p>
+                    </div>
+
+                    <aside class="space-y-4">
+                        <article
+                            v-for="highlight in photographerHighlights"
+                            :key="highlight.title"
+                            class="photographers-page-note rounded-[28px] bg-white p-5 shadow-[0px_18px_40px_rgba(20,23,45,0.08)]"
+                        >
+                            <div class="flex h-11 w-11 items-center justify-center rounded-[16px] bg-primary text-white">
+                                <Sparkles class="h-5 w-5" />
+                            </div>
+
+                            <h2 class="mt-5 font-onest text-[24px] font-medium leading-none text-[#20243B]">
+                                {{ highlight.title }}
+                            </h2>
+
+                            <p class="mt-4 text-sm leading-6 text-[#5C6079]">
+                                {{ highlight.description }}
+                            </p>
+                        </article>
+                    </aside>
+                </div>
             </div>
         </section>
     </AppHeaderLayout>
