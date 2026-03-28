@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Photographer>
@@ -21,6 +22,7 @@ class PhotographerFactory extends Factory
 
         return [
             'name' => $name,
+            'slug' => Str::slug($name),
             'url' => fake()->optional()->url(),
             'image_path' => Arr::random([
                 'photos/placeholder.svg',

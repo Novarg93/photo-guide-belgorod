@@ -64,19 +64,19 @@ const selectedFilterBadges = computed(() => {
     const badges: Array<{ label: string; value: string }> = []
 
     if (props.filters.mood) {
-        badges.push({ label: 'Mood', value: props.filters.mood })
+        badges.push({ label: 'Настроение', value: props.filters.mood })
     }
 
     if (props.filters.season) {
-        badges.push({ label: 'Season', value: props.filters.season })
+        badges.push({ label: 'Сезон', value: props.filters.season })
     }
 
     if (props.filters.location) {
-        badges.push({ label: 'Location', value: props.filters.location })
+        badges.push({ label: 'Локация', value: props.filters.location })
     }
 
     if (props.filters.clothing) {
-        badges.push({ label: 'Clothing', value: props.filters.clothing })
+        badges.push({ label: 'Одежда', value: props.filters.clothing })
     }
 
     return badges
@@ -95,65 +95,65 @@ const backToCategoryUrl = computed(() => {
 
 const briefText = computed(() => {
     const lines: string[] = [
-        'Brief for photographer',
-        `Category: ${props.category.name}`,
+        'Бриф для фотографа',
+        `Категория: ${props.category.name}`,
     ]
 
     if (selectedFilterBadges.value.length > 0) {
-        lines.push('Filters:')
+        lines.push('Фильтры:')
 
         selectedFilterBadges.value.forEach((badge) => {
             lines.push(`- ${badge.label}: ${badge.value}`)
         })
     } else {
-        lines.push('Filters: not selected')
+        lines.push('Фильтры: не выбраны')
     }
 
     if (props.peopleCount) {
-        lines.push(`People count: ${props.peopleCount}`)
+        lines.push(`Количество людей: ${props.peopleCount}`)
     }
 
     if (props.notes) {
-        lines.push(`Notes: ${props.notes}`)
+        lines.push(`Заметки: ${props.notes}`)
     }
 
     if (props.retouchPreference) {
-        lines.push(`Retouch: ${props.retouchPreference}`)
+        lines.push(`Ретушь: ${props.retouchPreference}`)
     }
 
     if (props.colorStyle) {
-        lines.push(`Color: ${props.colorStyle}`)
+        lines.push(`Цвет: ${props.colorStyle}`)
     }
 
-    lines.push(`Link: ${props.shareUrl}`)
-    lines.push('Examples:')
+    lines.push(`Ссылка: ${props.shareUrl}`)
+    lines.push('Примеры:')
 
     if (props.examples.length === 0) {
-        lines.push('1. No matching examples')
+        lines.push('1. Нет подходящих примеров')
     } else {
         props.examples.forEach((example, index) => {
             const hints: string[] = []
 
             if (example.mood) {
-                hints.push(`mood: ${example.mood}`)
+                hints.push(`настроение: ${example.mood}`)
             }
 
             if (example.location_hint) {
-                hints.push(`location: ${example.location_hint}`)
+                hints.push(`локация: ${example.location_hint}`)
             }
 
             lines.push(`${index + 1}. ${example.title}${hints.length > 0 ? ` (${hints.join(', ')})` : ''}`)
         })
     }
 
-    lines.push('Locations:')
+    lines.push('Локации:')
 
     if (props.locationFilterOptionLabels.length > 0) {
-        lines.push(`Applied location filters: ${props.locationFilterOptionLabels.join(', ')}`)
+        lines.push(`Примененные фильтры локаций: ${props.locationFilterOptionLabels.join(', ')}`)
     }
 
     if (props.locations.length === 0) {
-        lines.push('1. No matching locations')
+        lines.push('1. Нет подходящих локаций')
     } else {
         props.locations.forEach((location, index) => {
             lines.push(`${index + 1}. ${location.name}`)
@@ -165,10 +165,10 @@ const briefText = computed(() => {
 
 const briefDetails = computed(() => {
     return [
-        { label: 'People count', value: props.peopleCount },
-        { label: 'Retouch preference', value: props.retouchPreference },
-        { label: 'Color style', value: props.colorStyle },
-        { label: 'Token', value: props.token },
+        { label: 'Количество людей', value: props.peopleCount },
+        { label: 'Предпочтение по ретуши', value: props.retouchPreference },
+        { label: 'Цветовой стиль', value: props.colorStyle },
+        { label: 'Токен', value: props.token },
     ].filter((item) => item.value)
 })
 
@@ -211,37 +211,37 @@ const copyBriefText = async (): Promise<void> => {
                     <div class="relative z-10">
                         <Link :href="catalog()" class="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/80 px-4 py-2 text-sm text-[#20243B] shadow-[0px_10px_24px_rgba(0,0,0,0.06)] backdrop-blur-sm">
                             <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary"><Sparkles class="h-3.5 w-3.5" /></span>
-                            <span>Back to catalog</span>
+                            <span>Назад в каталог</span>
                         </Link>
 
                         <div class="mt-7 grid gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:items-end">
                             <div>
                                 <h1 class="text-[#20243B]">
-                                    <span class="font-onest text-[38px] font-medium leading-none tracking-[-0.02em] md:text-[54px]">Brief</span>
-                                    <span class="ml-2 font-playfair text-[44px] font-semibold italic leading-none tracking-[-0.02em] text-[#4252FF] md:text-[64px]">Summary</span>
+                                    <span class="font-onest text-[38px] font-medium leading-none tracking-[-0.02em] md:text-[54px]">Краткий</span>
+                                    <span class="ml-2 font-playfair text-[44px] font-semibold italic leading-none tracking-[-0.02em] text-[#4252FF] md:text-[64px]">бриф</span>
                                 </h1>
                                 <h2 class="mt-5 font-onest text-[28px] font-medium leading-none text-[#20243B] md:text-[34px]">{{ category.name }}</h2>
-                                <p class="mt-4 max-w-3xl text-sm leading-6 text-[#5C6079] md:text-base">{{ category.description || 'Category description will be added later.' }}</p>
+                                <p class="mt-4 max-w-3xl text-sm leading-6 text-[#5C6079] md:text-base">{{ category.description || 'Описание категории появится позже.' }}</p>
                             </div>
 
                             <div class="rounded-[24px] bg-white p-5 shadow-[0px_18px_40px_rgba(20,23,45,0.08)]">
                                 <div class="grid gap-4 sm:grid-cols-2">
                                     <div class="rounded-[20px] bg-[#F7F8FF] px-4 py-4">
-                                        <p class="font-onest text-sm font-medium text-[#A0A3B8]">Selected references</p>
+                                        <p class="font-onest text-sm font-medium text-[#A0A3B8]">Выбранные референсы</p>
                                         <div class="mt-3 flex items-end gap-3">
                                             <span class="font-onest text-5xl font-medium leading-none text-[#20243B]">{{ examples.length }}</span>
-                                            <span class="pb-1 text-sm text-[#5C6079]">cards included</span>
+                                            <span class="pb-1 text-sm text-[#5C6079]">карточек включено</span>
                                         </div>
                                     </div>
                                     <div class="rounded-[20px] bg-[#20243B] px-4 py-4 text-white">
-                                        <p class="font-onest text-sm font-medium text-white/60">Matching locations</p>
+                                        <p class="font-onest text-sm font-medium text-white/60">Подходящие локации</p>
                                         <div class="mt-3 flex items-end gap-3">
                                             <span class="font-onest text-5xl font-medium leading-none">{{ locations.length }}</span>
-                                            <span class="pb-1 text-sm text-white/70">places attached</span>
+                                            <span class="pb-1 text-sm text-white/70">мест привязано</span>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="mt-4 rounded-[18px] border border-[#E2E5F6] bg-white px-4 py-3 text-sm leading-6 text-[#303651]">This page is ready to share with a photographer as a compact summary of your direction, chosen references, and filtered location suggestions.</div>
+                                <div class="mt-4 rounded-[18px] border border-[#E2E5F6] bg-white px-4 py-3 text-sm leading-6 text-[#303651]">Эту страницу можно отправить фотографу как компактное резюме вашего направления, выбранных референсов и отфильтрованных рекомендаций по локациям.</div>
                             </div>
                         </div>
                     </div>
@@ -250,29 +250,29 @@ const copyBriefText = async (): Promise<void> => {
                 <div class="mt-8 grid gap-5 xl:grid-cols-[0.34fr_0.66fr]">
                     <aside class="space-y-5">
                         <div class="rounded-[32px] bg-white p-5 shadow-[0px_18px_40px_rgba(20,23,45,0.08)] md:p-6">
-                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A8FAF]">Sharing</p>
-                            <h2 class="mt-2 font-onest text-[28px] font-medium leading-none text-[#20243B]">Shareable brief</h2>
-                            <p class="mt-4 text-sm leading-6 text-[#5C6079] break-all">{{ shareUrl }}</p>
+                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A8FAF]">Поделиться</p>
+                            <h2 class="mt-2 font-onest text-[28px] font-medium leading-none text-[#20243B]">Ссылка на бриф</h2>
+                            <p class="mt-4 break-all text-sm leading-6 text-[#5C6079]">{{ shareUrl }}</p>
                             <div class="mt-5 flex flex-col gap-3">
-                                <Button class="brief-show-action" @click="copyLink"><Copy class="h-4 w-4" />Copy link</Button>
-                                <Button variant="outline" class="brief-show-action" @click="copyBriefText"><Share2 class="h-4 w-4" />Copy brief text</Button>
+                                <Button class="brief-show-action" @click="copyLink"><Copy class="h-4 w-4" />Скопировать ссылку</Button>
+                                <Button variant="outline" class="brief-show-action" @click="copyBriefText"><Share2 class="h-4 w-4" />Скопировать текст брифа</Button>
                             </div>
                             <div v-if="copied" class="mt-4 inline-flex items-center gap-2 rounded-full border border-[#D9DCF3] bg-[#F7F8FF] px-4 py-2 text-sm font-medium text-[#4252FF]">
                                 <CheckCheck class="h-4 w-4" />
-                                <span>Copied</span>
+                                <span>Скопировано</span>
                             </div>
                         </div>
 
                         <div class="rounded-[32px] bg-white p-5 shadow-[0px_18px_40px_rgba(20,23,45,0.08)] md:p-6">
-                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A8FAF]">Applied filters</p>
+                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A8FAF]">Примененные фильтры</p>
                             <div v-if="selectedFilterBadges.length > 0" class="mt-4 flex flex-wrap gap-2">
                                 <Badge v-for="badge in selectedFilterBadges" :key="badge.label" variant="secondary" class="brief-show-chip border border-[#D9DCF3] bg-white px-3 py-1.5 text-[#4252FF]">{{ badge.label }}: {{ badge.value }}</Badge>
                             </div>
-                            <p v-else class="mt-4 text-sm leading-6 text-[#5C6079]">No explicit top-level filters were saved for this brief.</p>
+                            <p v-else class="mt-4 text-sm leading-6 text-[#5C6079]">Для этого брифа не были сохранены явные верхнеуровневые фильтры.</p>
                         </div>
 
                         <div v-if="briefDetails.length > 0 || notes" class="rounded-[32px] bg-white p-5 shadow-[0px_18px_40px_rgba(20,23,45,0.08)] md:p-6">
-                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A8FAF]">Details</p>
+                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A8FAF]">Детали</p>
                             <div v-if="briefDetails.length > 0" class="mt-4 space-y-3">
                                 <div v-for="detail in briefDetails" :key="detail.label" class="rounded-[20px] bg-[#F7F8FF] px-4 py-3">
                                     <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A8FAF]">{{ detail.label }}</p>
@@ -280,16 +280,16 @@ const copyBriefText = async (): Promise<void> => {
                                 </div>
                             </div>
                             <div v-if="notes" class="mt-4 rounded-[20px] border border-[#E2E5F6] bg-[#FCFCFF] px-4 py-3">
-                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A8FAF]">Notes</p>
+                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A8FAF]">Заметки</p>
                                 <p class="mt-2 whitespace-pre-line text-sm leading-6 text-[#303651]">{{ notes }}</p>
                             </div>
                         </div>
 
                         <Link :href="backToCategoryUrl" class="brief-show-back group block rounded-[32px] bg-[#20243B] p-5 text-white shadow-[0px_18px_40px_rgba(20,23,45,0.14)]">
-                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-white/60">Continue editing</p>
-                            <p class="mt-4 font-onest text-[28px] font-medium leading-none">Back to category</p>
-                            <p class="mt-4 text-sm leading-6 text-white/72">Return to the category page with the saved filter state and keep refining the reference set.</p>
-                            <div class="mt-5 inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/8 px-4 py-2 text-sm font-medium text-white"><span>Open category</span><ArrowRight class="brief-show-back-arrow h-4 w-4" /></div>
+                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-white/60">Продолжить редактирование</p>
+                            <p class="mt-4 font-onest text-[28px] font-medium leading-none">Назад к категории</p>
+                            <p class="mt-4 text-sm leading-6 text-white/72">Вернитесь на страницу категории с сохраненным состоянием фильтров и продолжайте уточнять набор референсов.</p>
+                            <div class="mt-5 inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/8 px-4 py-2 text-sm font-medium text-white"><span>Открыть категорию</span><ArrowRight class="brief-show-back-arrow h-4 w-4" /></div>
                         </Link>
                     </aside>
 
@@ -297,8 +297,8 @@ const copyBriefText = async (): Promise<void> => {
                         <div>
                             <div class="flex items-center justify-between gap-4">
                                 <div>
-                                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A8FAF]">References</p>
-                                    <h2 class="mt-2 font-onest text-[28px] font-medium leading-none text-[#20243B]">Selected examples</h2>
+                                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A8FAF]">Референсы</p>
+                                    <h2 class="mt-2 font-onest text-[28px] font-medium leading-none text-[#20243B]">Выбранные примеры</h2>
                                 </div>
                             </div>
 
@@ -318,7 +318,7 @@ const copyBriefText = async (): Promise<void> => {
                                         <div class="mt-5 space-y-3">
                                             <p v-if="example.summary" class="brief-show-example-description line-clamp-3 text-sm leading-6 text-[#5C6079]">{{ example.summary }}</p>
                                             <p v-else-if="example.location_hint || example.season_hint || example.clothing_hint" class="brief-show-example-description line-clamp-3 text-sm leading-6 text-[#5C6079]">{{ [example.location_hint, example.season_hint, example.clothing_hint].filter((value) => value).join(' / ') }}</p>
-                                            <p v-else class="text-sm leading-6 text-[#7A809E]">Matching tags will appear here once filters are assigned.</p>
+                                            <p v-else class="text-sm leading-6 text-[#7A809E]">Подходящие теги появятся здесь после назначения фильтров.</p>
                                         </div>
                                         <div v-if="example.filter_option_labels.length > 0" class="mt-5 flex flex-wrap gap-2"><Badge v-for="label in example.filter_option_labels.slice(0, 4)" :key="`${example.id}-${label}`" variant="secondary" class="brief-show-chip border border-[#D9DCF3] bg-white px-3 py-1.5 text-[#4252FF]">{{ label }}</Badge></div>
                                     </div>
@@ -329,8 +329,8 @@ const copyBriefText = async (): Promise<void> => {
                         <div>
                             <div class="flex items-center justify-between gap-4">
                                 <div>
-                                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A8FAF]">Locations</p>
-                                    <h2 class="mt-2 font-onest text-[28px] font-medium leading-none text-[#20243B]">Recommended locations</h2>
+                                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A8FAF]">Локации</p>
+                                    <h2 class="mt-2 font-onest text-[28px] font-medium leading-none text-[#20243B]">Рекомендуемые локации</h2>
                                 </div>
                             </div>
 
@@ -348,7 +348,7 @@ const copyBriefText = async (): Promise<void> => {
                                                 <div class="brief-show-location-icon flex h-11 w-11 shrink-0 items-center justify-center rounded-[16px] bg-primary text-white"><MapPinned class="h-5 w-5" /></div>
                                                 <div>
                                                     <h3 class="brief-show-location-title font-onest text-[24px] font-medium leading-none text-[#20243B]">{{ location.name }}</h3>
-                                                    <p class="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#8A8FAF]">Location recommendation</p>
+                                                    <p class="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#8A8FAF]">Рекомендованная локация</p>
                                                 </div>
                                             </div>
                                             <div class="brief-show-location-arrow flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#D9DCF3] text-[#4252FF]"><ArrowRight class="h-4 w-4" /></div>
@@ -358,7 +358,7 @@ const copyBriefText = async (): Promise<void> => {
                                 </article>
                             </div>
 
-                            <div v-else class="mt-6 rounded-[28px] border border-dashed border-[#D9DCF3] bg-[#F7F8FF] p-5 text-sm leading-6 text-[#5C6079]">No locations match the selected filters for this brief.</div>
+                            <div v-else class="mt-6 rounded-[28px] border border-dashed border-[#D9DCF3] bg-[#F7F8FF] p-5 text-sm leading-6 text-[#5C6079]">Нет локаций, подходящих под выбранные фильтры для этого брифа.</div>
                         </div>
                     </div>
                 </div>

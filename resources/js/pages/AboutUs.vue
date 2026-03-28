@@ -2,7 +2,6 @@
 import { Link } from '@inertiajs/vue3'
 import { useHead } from '@vueuse/head'
 import { ArrowRight, Sparkles } from 'lucide-vue-next'
-import { useRevealOnScroll } from '@/composables/useRevealOnScroll'
 import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue'
 
 const props = defineProps<{
@@ -10,27 +9,21 @@ const props = defineProps<{
     metaDescription: string;
 }>()
 
-const { sectionRef, isVisible } = useRevealOnScroll({
-    threshold: 0.12,
-    rootMargin: '0px 0px -10% 0px',
-    once: true,
-})
-
 const pillars = [
     {
-        title: 'Why this project exists',
+        title: 'Зачем существует этот проект',
         description:
-            'We created this project to organize local photo session knowledge in one place: categories, references, locations, photographers, and planning tips.',
+            'Мы создали этот проект, чтобы собрать всю информацию о фотосессиях в одном месте: категории, референсы, локации, фотографов и советы по подготовке.',
     },
     {
-        title: 'Problem we solve',
+        title: 'Какую проблему мы решаем',
         description:
-            'Most people spend too much time searching across chats and social media. We reduce this chaos with structured filters, ready examples, and a clear brief flow.',
+            'Большинство людей тратят слишком много времени на поиск в чатах и соцсетях. Мы убираем этот хаос с помощью структурированных фильтров, готовых примеров и понятного процесса создания брифа.',
     },
     {
-        title: 'Our plans',
+        title: 'Наши планы',
         description:
-            'Next steps are deeper content coverage, better filtering quality, richer local guides, and more practical tools for faster communication between clients and photographers.',
+            'Дальше — больше контента, улучшение фильтров, развитие локальных гайдов и создание удобных инструментов для быстрого общения между клиентами и фотографами.',
     },
 ] as const
 
@@ -42,7 +35,7 @@ useHead(() => ({
 
 <template>
     <AppHeaderLayout>
-        <section ref="sectionRef" class="bg-[#f5f5f5] pt-32 pb-64 md:pb-80">
+        <section class="bg-[#f5f5f5] pt-32 pb-64 md:pb-80">
             <div class="mx-auto max-w-7xl px-5">
                 <div class="relative overflow-hidden rounded-[32px] bg-card px-5 py-8 md:px-8 md:py-10">
                     <div class="grid-overlay-hero">
@@ -56,57 +49,39 @@ useHead(() => ({
                     <div class="relative z-10">
                         <Link
                             href="/"
-                            :class="[
-                                'about-eyebrow-enter inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/80 px-4 py-2 text-sm text-[#20243B] shadow-[0px_10px_24px_rgba(0,0,0,0.06)] backdrop-blur-sm',
-                                isVisible && 'reveal-active',
-                            ]"
+                            class="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/80 px-4 py-2 text-sm text-[#20243B] shadow-[0px_10px_24px_rgba(0,0,0,0.06)] backdrop-blur-sm"
                         >
                             <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary">
                                 <Sparkles class="h-3.5 w-3.5" />
                             </span>
-                            <span>Back to home</span>
+                            <span>На главную</span>
                         </Link>
 
                         <div class="mt-7 grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
                             <div>
-                                <h1
-                                    :class="[
-                                        'about-title-enter text-[#20243B]',
-                                        isVisible && 'reveal-active',
-                                    ]"
-                                >
+                                <h1 class="text-[#20243B]">
                                     <span class="font-onest text-[38px] font-medium leading-none tracking-[-0.02em] md:text-[54px]">
-                                        About
+                                        О
                                     </span>
                                     <span class="ml-2 font-playfair text-[44px] font-semibold italic leading-none tracking-[-0.02em] text-[#4252FF] md:text-[64px]">
-                                        Us
+                                        нас
                                     </span>
                                 </h1>
 
-                                <p
-                                    :class="[
-                                        'about-subtitle-enter mt-5 max-w-3xl text-sm leading-6 text-[#5C6079] md:text-base',
-                                        isVisible && 'reveal-active',
-                                    ]"
-                                >
-                                    Photo Guide Belgorod is a local content project that helps people plan photo sessions faster and with more confidence.
+                                <p class="mt-5 max-w-3xl text-sm leading-6 text-[#5C6079] md:text-base">
+                                    Photo Guide Belgorod — это локальный проект, который помогает быстрее и проще планировать фотосессии.
                                 </p>
                             </div>
 
-                            <div
-                                :class="[
-                                    'about-panel-enter rounded-[24px] bg-white p-5 shadow-[0px_18px_40px_rgba(20,23,45,0.08)]',
-                                    isVisible && 'reveal-active',
-                                ]"
-                            >
-                                <p class="font-onest text-sm font-medium text-[#A0A3B8]">Project focus</p>
+                            <div class="rounded-[24px] bg-white p-5 shadow-[0px_18px_40px_rgba(20,23,45,0.08)]">
+                                <p class="font-onest text-sm font-medium text-[#A0A3B8]">Фокус проекта</p>
                                 <div class="mt-3 space-y-3">
                                     <div class="rounded-[18px] bg-[#F7F8FF] px-4 py-3 text-sm leading-6 text-[#303651]">
-                                        Local categories, references, locations, photographers, and practical guidance.
+                                        Локальные категории, референсы, локации, фотографы и практические рекомендации.
                                     </div>
                                     <div class="inline-flex items-center gap-2 rounded-full border border-[#D9DCF3] bg-white px-3 py-1.5 text-xs font-medium text-[#4252FF]">
                                         <ArrowRight class="h-3.5 w-3.5" />
-                                        Structured planning instead of scattered chats
+                                        Структурированное планирование вместо хаотичных переписок
                                     </div>
                                 </div>
                             </div>
@@ -118,11 +93,7 @@ useHead(() => ({
                     <article
                         v-for="(pillar, index) in pillars"
                         :key="pillar.title"
-                        :class="[
-                            'about-card-enter about-card relative overflow-hidden rounded-[28px] bg-white p-5 shadow-[0px_18px_40px_rgba(20,23,45,0.08)]',
-                            isVisible && 'reveal-active',
-                        ]"
-                        :style="{ '--reveal-delay': `${0.2 + index * 0.08}s` }"
+                        class="about-card relative overflow-hidden rounded-[28px] bg-white p-5 shadow-[0px_18px_40px_rgba(20,23,45,0.08)]"
                     >
                         <div class="about-card-accent"></div>
 

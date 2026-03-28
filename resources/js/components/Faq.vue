@@ -30,12 +30,10 @@ const faqNumber = (index: number) => String(index + 1).padStart(2, '0')
 <template>
     <section ref="sectionRef" class="bg-[#f5f5f5] pt-32 pb-62">
         <div class="mx-auto max-w-7xl px-4 xl:px-0">
-            <h2
-                :class="[
-                    'faq-title-enter text-center text-[#20243B]',
-                    isVisible && 'reveal-active',
-                ]"
-            >
+            <h2 :class="[
+                'faq-title-enter text-center text-[#20243B]',
+                isVisible && 'reveal-active',
+            ]">
                 <span class="font-onest text-[33px] font-medium leading-none tracking-[-0.01em]">
                     <span class="relative -top-1 text-2xl font-medium text-[#CBCBCB]">(</span>
                     Частые
@@ -49,23 +47,15 @@ const faqNumber = (index: number) => String(index + 1).padStart(2, '0')
                 <span class="relative -top-1 font-onest text-2xl font-medium text-[#CBCBCB]">)</span>
             </h2>
 
-            <div
-                :class="[
-                    'faq-list-enter mx-auto mt-14',
-                    isVisible && 'reveal-active',
-                ]"
-            >
+            <div :class="[
+                'faq-list-enter mx-auto mt-14',
+                isVisible && 'reveal-active',
+            ]">
                 <Accordion type="single" collapsible class="space-y-3">
-                    <AccordionItem
-                        v-for="(faq, index) in faqs"
-                        :key="faq.id"
-                        :value="String(faq.id)"
-                        :class="[
-                            'faq-item-enter rounded-[14px] border-0 data-[state=open]:ring-1 data-[state=open]:ring-[#6B78FF]',
-                            isVisible && 'reveal-active',
-                        ]"
-                        :style="{ '--reveal-delay': `${0.18 + index * 0.08}s` }"
-                    >
+                    <AccordionItem v-for="(faq, index) in faqs" :key="faq.id" :value="String(faq.id)" :class="[
+                        'faq-item-enter rounded-[14px] border-0 data-[state=open]:ring-1 data-[state=open]:ring-[#6B78FF]',
+                        isVisible && 'reveal-active',
+                    ]" :style="{ '--reveal-delay': `${0.18 + index * 0.08}s` }">
                         <div class="flex items-stretch gap-[2px]">
                             <div
                                 class="flex min-h-[66px] shrink-0 items-center justify-center rounded-[12px] bg-white px-6 shadow-[0px_10px_24px_rgba(0,0,0,0.10)] font-onest text-[16px] font-medium leading-none text-[#A8A8A8]">
@@ -75,7 +65,7 @@ const faqNumber = (index: number) => String(index + 1).padStart(2, '0')
                             <div
                                 class="relative flex min-w-0 flex-1 flex-col rounded-[12px] bg-white shadow-[0px_10px_24px_rgba(0,0,0,0.10)]">
                                 <div
-                                    class="pointer-events-none absolute -left-[2px] top-4 bottom-4 w-[1px] bg-[repeating-linear-gradient(to_bottom,rgba(32,36,59,0.28)_0_10px,transparent_10px_14px)]">
+                                    class="pointer-events-none absolute -left-[2px] top-4 bottom-4 w-[1px] bg-[repeating-linear-gradient(to_bottom,rgba(32,36,59,0.12)_0_6px,transparent_6px_14px)]">
                                 </div>
 
                                 <AccordionTrigger

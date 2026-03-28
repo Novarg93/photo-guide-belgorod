@@ -23,6 +23,9 @@ class PhotographersTable
                 TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('slug')
+                    ->searchable()
+                    ->toggleable(),
                 TextColumn::make('url')
                     ->label('URL')
                     ->searchable()

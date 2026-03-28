@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\BlogController;
 use App\Models\Blog;
+use Illuminate\Support\Facades\Route;
 use Inertia\Testing\AssertableInertia as Assert;
 
 it('shows only active blogs on blogs page', function () {
@@ -25,6 +27,14 @@ it('shows only active blogs on blogs page', function () {
             ->where('blogs.0.url', route('blogs.show', ['slug' => 'active-blog'])));
 });
 
+it('binds blog routes to blog controller', function () {
+    expect(Route::getRoutes()->getByName('blogs')?->getActionName())
+        ->toBe(BlogController::class.'@index');
+
+    expect(Route::getRoutes()->getByName('blogs.show')?->getActionName())
+        ->toBe(BlogController::class.'@show');
+});
+
 it('shows blog detail page by slug', function () {
     $blog = Blog::factory()->create([
         'title' => 'Golden Hour Guide',
@@ -43,6 +53,20 @@ it('shows blog detail page by slug', function () {
             ->where('blog.title', 'Golden Hour Guide')
             ->where('blog.slug', 'golden-hour-guide')
             ->where('metaTitle', 'Golden Hour Guide for Photo Sessions'));
+});
+
+it('uses semantic blog detail url', function () {
+    $blog = Blog::factory()->create([
+        'slug' => 'golden-hour-guide',
+        'is_active' => true,
+    ]);
+
+    expect(route('blogs.show', ['slug' => $blog->slug], false))
+        ->toBe('/blog/golden-hour-guide');
+
+    $this->get('/blog/golden-hour-guide')
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page->component('BlogShow'));
 });
 
 it('returns not found for inactive blog detail page', function () {

@@ -84,7 +84,7 @@ const mainNavItems: NavItem[] = [
         icon: Camera,
     },
     {
-        title: 'Блог',
+        title: 'Статьи',
         href: '/blogs',
         icon: BookOpen,
     },

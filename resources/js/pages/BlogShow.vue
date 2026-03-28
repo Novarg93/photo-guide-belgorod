@@ -25,16 +25,16 @@ const props = defineProps<{
 const articleInsights = computed(() => {
     return [
         {
-            title: 'Article format',
-            description: 'A practical guide page designed for quick reading before moving back into the catalog flow.',
+            title: 'Формат статьи',
+            description: 'Практическая страница-гайд, рассчитанная на быстрое чтение перед возвратом в каталог.',
         },
         {
-            title: 'Use case',
-            description: 'Helpful when you need extra context before choosing a location, category, or photographer.',
+            title: 'Когда полезно',
+            description: 'Подходит, когда нужен дополнительный контекст перед выбором локации, категории или фотографа.',
         },
         {
-            title: 'Reading mode',
-            description: 'Clean typography, focused spacing, and a quieter layout for longer text blocks.',
+            title: 'Режим чтения',
+            description: 'Чистая типографика, спокойные отступы и более тихий макет для длинных текстовых блоков.',
         },
     ]
 })
@@ -66,7 +66,7 @@ useHead(() => ({
                             <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary">
                                 <Sparkles class="h-3.5 w-3.5" />
                             </span>
-                            <span>Back to guides</span>
+                            <span>Назад к гайдам</span>
                         </Link>
 
                         <div class="mt-7 grid gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:items-end">
@@ -98,9 +98,9 @@ useHead(() => ({
                                     </div>
 
                                     <div>
-                                        <p class="font-onest text-sm font-medium text-[#A0A3B8]">Guide page</p>
+                                        <p class="font-onest text-sm font-medium text-[#A0A3B8]">Страница гайда</p>
                                         <p class="mt-2 text-sm leading-6 text-[#303651]">
-                                            Read the article in full, then return to the catalog with clearer context for your next step.
+                                            Прочитайте статью полностью, а затем вернитесь в каталог уже с более понятным контекстом для следующего шага.
                                         </p>
                                     </div>
                                 </div>
@@ -158,10 +158,10 @@ useHead(() => ({
                             href="/blogs"
                             class="blog-show-back group block rounded-[28px] bg-[#20243B] p-5 text-white shadow-[0px_18px_40px_rgba(20,23,45,0.14)]"
                         >
-                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-white/60">Continue reading</p>
-                            <p class="mt-4 font-onest text-[24px] font-medium leading-none">Back to all guides</p>
+                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-white/60">Продолжить чтение</p>
+                            <p class="mt-4 font-onest text-[24px] font-medium leading-none">Назад ко всем гайдам</p>
                             <div class="mt-5 inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/8 px-4 py-2 text-sm font-medium text-white">
-                                <span>Open list</span>
+                                <span>Открыть список</span>
                                 <ArrowRight class="blog-show-back-arrow h-4 w-4" />
                             </div>
                         </Link>

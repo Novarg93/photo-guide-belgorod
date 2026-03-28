@@ -2,7 +2,6 @@
 import { Link } from '@inertiajs/vue3'
 import { useHead } from '@vueuse/head'
 import { ArrowRight, Sparkles } from 'lucide-vue-next'
-import { useRevealOnScroll } from '@/composables/useRevealOnScroll'
 import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue'
 import { home } from '@/routes'
 
@@ -25,18 +24,12 @@ const props = defineProps<{
     metaDescription: string;
 }>()
 
-const { sectionRef, isVisible } = useRevealOnScroll({
-    threshold: 0.12,
-    rootMargin: '0px 0px -10% 0px',
-    once: true,
-})
-
 const categorySummary = (category: CategoryCard): string => {
     if (category.description) {
         return category.description
     }
 
-    return 'Category description will be added later.'
+    return 'Описание категории появится позже.'
 }
 
 const groupPreview = (category: CategoryCard): string[] => {
@@ -55,7 +48,7 @@ useHead(() => ({
 
 <template>
     <AppHeaderLayout>
-        <section ref="sectionRef" class="bg-[#f5f5f5] pb-64 pt-32 md:pb-80">
+        <section class="bg-[#f5f5f5] pb-64 pt-32 md:pb-80">
             <div class="mx-auto max-w-7xl px-5">
                 <div class="relative overflow-hidden rounded-[32px] bg-card px-5 py-8 md:px-8 md:py-10">
                     <div class="grid-overlay-hero">
@@ -69,53 +62,35 @@ useHead(() => ({
                     <div class="relative z-10">
                         <Link
                             :href="home()"
-                            :class="[
-                                'catalog-eyebrow-enter inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/80 px-4 py-2 text-sm text-[#20243B] shadow-[0px_10px_24px_rgba(0,0,0,0.06)] backdrop-blur-sm',
-                                isVisible && 'reveal-active',
-                            ]"
+                            class="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/80 px-4 py-2 text-sm text-[#20243B] shadow-[0px_10px_24px_rgba(0,0,0,0.06)] backdrop-blur-sm"
                         >
                             <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary">
                                 <Sparkles class="h-3.5 w-3.5" />
                             </span>
-                            <span>Back to home</span>
+                            <span>На главную</span>
                         </Link>
 
                         <div class="mt-7 grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
                             <div>
-                                <h1
-                                    :class="[
-                                        'catalog-title-enter text-[#20243B]',
-                                        isVisible && 'reveal-active',
-                                    ]"
-                                >
+                                <h1 class="text-[#20243B]">
                                     <span class="font-onest text-[38px] font-medium leading-none tracking-[-0.02em] md:text-[54px]">
-                                        Photo Session
+                                        Каталог
                                     </span>
                                     <span class="ml-2 font-playfair text-[44px] font-semibold italic leading-none tracking-[-0.02em] text-[#4252FF] md:text-[64px]">
-                                        Catalog
+                                        фотосессий
                                     </span>
                                 </h1>
 
-                                <p
-                                    :class="[
-                                        'catalog-subtitle-enter mt-5 max-w-2xl text-sm leading-6 text-[#5C6079] md:text-base',
-                                        isVisible && 'reveal-active',
-                                    ]"
-                                >
-                                    Choose a category, review its filter logic, and move into the matching photo session flow with the same visual language as the homepage sections.
+                                <p class="mt-5 max-w-2xl text-sm leading-6 text-[#5C6079] md:text-base">
+                                    Выберите категорию, посмотрите доступные фильтры и перейдите к подходящему сценарию фотосессии в том же визуальном стиле, что и на главной странице.
                                 </p>
                             </div>
 
-                            <div
-                                :class="[
-                                    'catalog-panel-enter rounded-[24px] bg-white p-5 shadow-[0px_18px_40px_rgba(20,23,45,0.08)]',
-                                    isVisible && 'reveal-active',
-                                ]"
-                            >
-                                <p class="font-onest text-sm font-medium text-[#A0A3B8]">Available categories</p>
+                            <div class="rounded-[24px] bg-white p-5 shadow-[0px_18px_40px_rgba(20,23,45,0.08)]">
+                                <p class="font-onest text-sm font-medium text-[#A0A3B8]">Доступные категории</p>
                                 <div class="mt-3 flex items-end gap-3">
                                     <span class="font-onest text-5xl font-medium leading-none text-[#20243B]">{{ categories.length }}</span>
-                                    <span class="pb-1 text-sm text-[#5C6079]">paths to start from</span>
+                                    <span class="pb-1 text-sm text-[#5C6079]">вариантов для старта</span>
                                 </div>
 
                                 <div class="mt-5 flex flex-wrap gap-2">
@@ -137,11 +112,7 @@ useHead(() => ({
                         v-for="(category, index) in categories"
                         :key="category.id"
                         :href="category.url"
-                        :class="[
-                            'catalog-card-enter catalog-card group relative overflow-hidden rounded-[28px] bg-white p-4 shadow-[0px_18px_40px_rgba(20,23,45,0.08)]',
-                            isVisible && 'reveal-active',
-                        ]"
-                        :style="{ '--reveal-delay': `${0.2 + index * 0.08}s` }"
+                        class="catalog-card group relative overflow-hidden rounded-[28px] bg-white p-4 shadow-[0px_18px_40px_rgba(20,23,45,0.08)]"
                     >
                         <div class="catalog-card-accent"></div>
 
@@ -189,10 +160,10 @@ useHead(() => ({
 
                             <div v-else class="mt-5 rounded-[20px] bg-[#F7F8FF] px-4 py-3">
                                 <p class="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8A8FAF]">
-                                    Filters
+                                    Фильтры
                                 </p>
                                 <p class="mt-2 text-sm leading-6 text-[#303651]">
-                                    Filter presets will be available here soon.
+                                    Наборы фильтров появятся здесь позже.
                                 </p>
                             </div>
 

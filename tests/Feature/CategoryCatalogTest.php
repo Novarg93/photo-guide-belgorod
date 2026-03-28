@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\WelcomeController;
 use App\Models\Category;
+use Illuminate\Support\Facades\Route;
 use Inertia\Testing\AssertableInertia as Assert;
 
 it('shows welcome page with category selection call to action', function () {
@@ -9,6 +11,11 @@ it('shows welcome page with category selection call to action', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->component('Welcome')
             ->where('metaTitle', 'Photo sessions in Belgorod'));
+});
+
+it('binds home route to welcome controller', function () {
+    expect(Route::getRoutes()->getByName('home')?->getActionName())
+        ->toBe(WelcomeController::class);
 });
 
 it('shows only active categories in catalog', function () {
@@ -49,6 +56,20 @@ it('shows category detail by slug', function () {
             ->where('category.name', 'Family')
             ->where('category.title', 'Family photo sessions in Belgorod')
             ->where('category.description', 'Family sessions in Belgorod.'));
+});
+
+it('uses semantic category url', function () {
+    $category = Category::factory()->create([
+        'slug' => 'family',
+        'is_active' => true,
+    ]);
+
+    expect(route('categories.show', ['slug' => $category->slug], false))
+        ->toBe('/category/family');
+
+    $this->get('/category/family')
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page->component('CategoryShow'));
 });
 
 it('shows copyright page', function () {

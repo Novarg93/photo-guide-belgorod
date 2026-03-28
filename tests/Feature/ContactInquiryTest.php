@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\ContactController;
 use App\Models\ContactInquiry;
+use Illuminate\Support\Facades\Route;
 use Inertia\Testing\AssertableInertia as Assert;
 
 it('renders contact us page', function () {
@@ -9,6 +11,14 @@ it('renders contact us page', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->component('ContactUs')
             ->where('metaTitle', 'Contact Us'));
+});
+
+it('binds contact routes to contact controller', function () {
+    expect(Route::getRoutes()->getByName('contact')?->getActionName())
+        ->toBe(ContactController::class.'@index');
+
+    expect(Route::getRoutes()->getByName('contact.store')?->getActionName())
+        ->toBe(ContactController::class.'@store');
 });
 
 it('stores contact inquiry from form', function () {

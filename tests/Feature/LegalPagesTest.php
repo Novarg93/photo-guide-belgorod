@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\LegalController;
 use App\Models\LegalPage;
+use Illuminate\Support\Facades\Route;
 use Inertia\Testing\AssertableInertia as Assert;
 
 it('shares active legal pages for footer navigation', function () {
@@ -50,6 +52,14 @@ it('renders a legal page by slug', function () {
             ->where('page.title', 'Privacy Policy')
             ->where('page.slug', 'privacy-policy')
             ->where('metaTitle', fn (string $title): bool => $title !== ''));
+});
+
+it('binds legal routes to legal controller', function () {
+    expect(Route::getRoutes()->getByName('legal.show')?->getActionName())
+        ->toBe(LegalController::class.'@show');
+
+    expect(Route::getRoutes()->getByName('copyright')?->getActionName())
+        ->toBe(LegalController::class.'@copyright');
 });
 
 it('returns not found for inactive legal page', function () {

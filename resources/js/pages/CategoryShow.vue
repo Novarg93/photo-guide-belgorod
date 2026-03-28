@@ -117,14 +117,14 @@ const currentPreset = computed(() => {
 
 const presetHelperText = computed(() => {
     if (selectedPreset.value === 'custom') {
-        return 'Custom preset is active. Select a preset to apply saved filter combinations.'
+        return 'Сейчас активен пользовательский пресет. Выберите пресет, чтобы применить сохраненную комбинацию фильтров.'
     }
 
     if (currentPreset.value?.summary) {
         return currentPreset.value.summary
     }
 
-    return 'Preset applies saved filters. Manual filter change switches to Custom.'
+    return 'Пресет применяет сохраненные фильтры. При ручном изменении фильтров режим переключится на «Пользовательский».'
 })
 
 const buildQuery = (): Record<string, string | string[]> => {
@@ -189,7 +189,7 @@ const updatePreset = (value: string): void => {
 
     const preset = props.presets.find((item) => item.slug === value)
 
-    if (! preset) {
+    if (!preset) {
         selectedPreset.value = 'custom'
         applyFilters()
 
@@ -275,38 +275,38 @@ const setBriefColorStyle = (value: string): void => {
                             <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary">
                                 <Sparkles class="h-3.5 w-3.5" />
                             </span>
-                            <span>Back to catalog</span>
+                            <span>Назад в каталог</span>
                         </Link>
 
                         <div class="mt-7 grid gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:items-end">
                             <div>
                                 <h1 class="text-[#20243B]">
                                     <span class="font-onest text-[38px] font-medium leading-none tracking-[-0.02em] md:text-[54px]">{{ category.title || category.name }}</span>
-                                    <span class="ml-2 font-playfair text-[44px] font-semibold italic leading-none tracking-[-0.02em] text-[#4252FF] md:text-[64px]">Moodboard</span>
+                                    <span class="ml-2 font-playfair text-[44px] font-semibold italic leading-none tracking-[-0.02em] text-[#4252FF] md:text-[64px]">черновик</span>
                                 </h1>
-                                <p class="mt-5 max-w-3xl text-sm leading-6 text-[#5C6079] md:text-base">{{ category.description || 'Category description will be added later.' }}</p>
+                                <p class="mt-5 max-w-3xl text-sm leading-6 text-[#5C6079] md:text-base">{{ category.description || 'Описание категории появится позже.' }}</p>
                             </div>
 
                             <div class="rounded-[24px] bg-white p-5 shadow-[0px_18px_40px_rgba(20,23,45,0.08)]">
                                 <div class="grid gap-4 sm:grid-cols-2">
                                     <div class="rounded-[20px] bg-[#F7F8FF] px-4 py-4">
-                                        <p class="font-onest text-sm font-medium text-[#A0A3B8]">Matching examples</p>
+                                        <p class="font-onest text-sm font-medium text-[#A0A3B8]">Подходящие примеры</p>
                                         <div class="mt-3 flex items-end gap-3">
                                             <span class="font-onest text-5xl font-medium leading-none text-[#20243B]">{{ examples.length }}</span>
-                                            <span class="pb-1 text-sm text-[#5C6079]">cards available</span>
+                                            <span class="pb-1 text-sm text-[#5C6079]">карточек доступно</span>
                                         </div>
                                     </div>
 
                                     <div class="rounded-[20px] bg-[#20243B] px-4 py-4 text-white">
-                                        <p class="font-onest text-sm font-medium text-white/60">Recommended locations</p>
+                                        <p class="font-onest text-sm font-medium text-white/60">Рекомендуемые локации</p>
                                         <div class="mt-3 flex items-end gap-3">
                                             <span class="font-onest text-5xl font-medium leading-none">{{ locations.length }}</span>
-                                            <span class="pb-1 text-sm text-white/70">places attached</span>
+                                            <span class="pb-1 text-sm text-white/70">мест привязано</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="mt-4 rounded-[18px] border border-[#E2E5F6] bg-white px-4 py-3 text-sm leading-6 text-[#303651]">Start with a preset, refine the filters, select the strongest references, and then generate a brief from the exact visual direction you want.</div>
+                                <div class="mt-4 rounded-[18px] border border-[#E2E5F6] bg-white px-4 py-3 text-sm leading-6 text-[#303651]">Начните с пресета, уточните фильтры, выберите самые сильные референсы и затем создайте бриф на основе нужного вам визуального направления.</div>
                             </div>
                         </div>
                     </div>
@@ -317,19 +317,19 @@ const setBriefColorStyle = (value: string): void => {
                         <div class="rounded-[32px] bg-white p-5 shadow-[0px_18px_40px_rgba(20,23,45,0.08)] md:p-6">
                             <div class="flex items-start justify-between gap-4">
                                 <div>
-                                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A8FAF]">Preset flow</p>
-                                    <h2 class="mt-2 font-onest text-[28px] font-medium leading-none text-[#20243B]">Filters & presets</h2>
+                                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A8FAF]">Работа с пресетами</p>
+                                    <h2 class="mt-2 font-onest text-[28px] font-medium leading-none text-[#20243B]">Фильтры и пресеты</h2>
                                 </div>
                                 <div class="flex h-12 w-12 items-center justify-center rounded-[18px] bg-[#F7F8FF] text-[#4252FF]"><SlidersHorizontal class="h-5 w-5" /></div>
                             </div>
 
                             <div class="mt-6 rounded-[24px] bg-[#F7F8FF] p-4">
                                 <div class="space-y-2">
-                                    <Label for="preset-selector" class="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A8FAF]">Preset</Label>
+                                    <Label for="preset-selector" class="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A8FAF]">Пресет</Label>
                                     <Select :model-value="selectedPreset" @update:model-value="(value) => updatePreset(String(value))">
-                                        <SelectTrigger id="preset-selector" class="category-show-select"><SelectValue placeholder="Custom" /></SelectTrigger>
+                                        <SelectTrigger id="preset-selector" class="category-show-select"><SelectValue placeholder="Пользовательский" /></SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="custom">Custom</SelectItem>
+                                            <SelectItem value="custom">Пользовательский</SelectItem>
                                             <SelectItem v-for="preset in presets" :key="preset.id" :value="preset.slug">{{ preset.title }}</SelectItem>
                                         </SelectContent>
                                     </Select>
@@ -339,10 +339,10 @@ const setBriefColorStyle = (value: string): void => {
 
                             <div class="mt-6 flex items-center justify-between gap-4">
                                 <div>
-                                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A8FAF]">Filter groups</p>
-                                    <p class="mt-2 text-sm leading-6 text-[#5C6079]">Toggle chips to narrow the visual direction. Manual changes always switch the preset back to Custom.</p>
+                                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A8FAF]">Группы фильтров</p>
+                                    <p class="mt-2 text-sm leading-6 text-[#5C6079]">Переключайте чипы, чтобы сузить визуальное направление. При ручном изменении фильтров пресет всегда переключается обратно на пользовательский.</p>
                                 </div>
-                                <Button variant="outline" class="category-show-reset" @click="resetFilters">Reset</Button>
+                                <Button variant="outline" class="category-show-reset" @click="resetFilters">Сбросить</Button>
                             </div>
 
                             <div v-if="filterGroups.length > 0" class="mt-6 space-y-4">
@@ -354,58 +354,58 @@ const setBriefColorStyle = (value: string): void => {
                                 </div>
                             </div>
 
-                            <div v-else class="mt-6 rounded-[24px] border border-dashed border-[#D9DCF3] bg-[#F7F8FF] p-4 text-sm leading-6 text-[#5C6079]">No filter groups configured for this category yet.</div>
+                            <div v-else class="mt-6 rounded-[24px] border border-dashed border-[#D9DCF3] bg-[#F7F8FF] p-4 text-sm leading-6 text-[#5C6079]">Для этой категории группы фильтров пока не настроены.</div>
                         </div>
 
                         <Dialog v-model:open="isBriefDialogOpen">
                             <DialogTrigger as-child>
                                 <button class="category-show-brief-card block w-full rounded-[32px] bg-[#20243B] p-5 text-left text-white shadow-[0px_18px_40px_rgba(20,23,45,0.14)]">
-                                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-white/60">Brief builder</p>
-                                    <p class="mt-4 font-onest text-[28px] font-medium leading-none">Create brief</p>
-                                    <p class="mt-4 max-w-sm text-sm leading-6 text-white/72">Generate a shareable brief from all filtered references or only the cards you select below.</p>
-                                    <div class="mt-5 inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/8 px-4 py-2 text-sm font-medium text-white"><span>Open dialog</span><ArrowRight class="category-show-brief-arrow h-4 w-4" /></div>
+                                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-white/60">Конструктор брифа</p>
+                                    <p class="mt-4 font-onest text-[28px] font-medium leading-none">Создать бриф</p>
+                                    <p class="mt-4 max-w-sm text-sm leading-6 text-white/72">Сгенерируйте ссылку на бриф на основе всех отфильтрованных референсов или только тех карточек, которые вы выберете ниже.</p>
+                                    <div class="mt-5 inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/8 px-4 py-2 text-sm font-medium text-white"><span>Открыть окно</span><ArrowRight class="category-show-brief-arrow h-4 w-4" /></div>
                                 </button>
                             </DialogTrigger>
                             <DialogContent>
                                 <DialogHeader>
-                                    <DialogTitle>Create brief</DialogTitle>
-                                    <DialogDescription>Add optional details before generating your brief link.</DialogDescription>
+                                    <DialogTitle>Создать бриф</DialogTitle>
+                                    <DialogDescription>Добавьте необязательные детали перед генерацией ссылки на бриф.</DialogDescription>
                                 </DialogHeader>
                                 <div class="space-y-4 py-2">
                                     <div class="space-y-2">
-                                        <Label for="people-count">People count</Label>
+                                        <Label for="people-count">Количество людей</Label>
                                         <Select :model-value="briefPeopleCount" @update:model-value="(value) => setBriefPeopleCount(String(value))">
-                                            <SelectTrigger id="people-count"><SelectValue placeholder="Optional" /></SelectTrigger>
-                                            <SelectContent><SelectItem value="not_set">Not specified</SelectItem><SelectItem value="1">1</SelectItem><SelectItem value="2">2</SelectItem><SelectItem value="3-4">3-4</SelectItem><SelectItem value="5+">5+</SelectItem></SelectContent>
+                                            <SelectTrigger id="people-count"><SelectValue placeholder="Необязательно" /></SelectTrigger>
+                                            <SelectContent><SelectItem value="not_set">Не указано</SelectItem><SelectItem value="1">1</SelectItem><SelectItem value="2">2</SelectItem><SelectItem value="3-4">3-4</SelectItem><SelectItem value="5+">5+</SelectItem></SelectContent>
                                         </Select>
                                     </div>
                                     <div class="space-y-2">
-                                        <Label for="brief-notes">Notes</Label>
-                                        <textarea id="brief-notes" v-model="briefNotes" rows="4" class="flex w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm shadow-xs outline-none ring-offset-white placeholder:text-zinc-400 focus-visible:ring-2 focus-visible:ring-zinc-900 disabled:cursor-not-allowed disabled:opacity-50" placeholder="Important details, preferences, style, props, retouch notes" />
+                                        <Label for="brief-notes">Заметки</Label>
+                                        <textarea id="brief-notes" v-model="briefNotes" rows="4" class="flex w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm shadow-xs outline-none ring-offset-white placeholder:text-zinc-400 focus-visible:ring-2 focus-visible:ring-zinc-900 disabled:cursor-not-allowed disabled:opacity-50" placeholder="Важные детали, предпочтения, стиль, реквизит, пожелания по ретуши" />
                                     </div>
                                     <div class="space-y-2">
-                                        <Label for="retouch-preference">Retouch preference</Label>
+                                        <Label for="retouch-preference">Предпочтения по ретуши</Label>
                                         <Select :model-value="briefRetouchPreference" @update:model-value="(value) => setBriefRetouchPreference(String(value))">
-                                            <SelectTrigger id="retouch-preference"><SelectValue placeholder="Optional" /></SelectTrigger>
-                                            <SelectContent><SelectItem value="not_set">Not specified</SelectItem><SelectItem value="Natural">Natural</SelectItem><SelectItem value="Classic">Classic</SelectItem><SelectItem value="Glam">Glam</SelectItem><SelectItem value="Photographer decides">Photographer decides</SelectItem></SelectContent>
+                                            <SelectTrigger id="retouch-preference"><SelectValue placeholder="Необязательно" /></SelectTrigger>
+                                            <SelectContent><SelectItem value="not_set">Не указано</SelectItem><SelectItem value="Natural">Естественная</SelectItem><SelectItem value="Classic">Классическая</SelectItem><SelectItem value="Glam">Гламур</SelectItem><SelectItem value="Photographer decides">На усмотрение фотографа</SelectItem></SelectContent>
                                         </Select>
                                     </div>
                                     <div class="space-y-2">
-                                        <Label for="color-style">Color style</Label>
+                                        <Label for="color-style">Цветовой стиль</Label>
                                         <Select :model-value="briefColorStyle" @update:model-value="(value) => setBriefColorStyle(String(value))">
-                                            <SelectTrigger id="color-style"><SelectValue placeholder="Optional" /></SelectTrigger>
-                                            <SelectContent><SelectItem value="not_set">Not specified</SelectItem><SelectItem value="Warm">Warm</SelectItem><SelectItem value="Cool">Cool</SelectItem><SelectItem value="Neutral">Neutral</SelectItem><SelectItem value="Film">Film</SelectItem><SelectItem value="Not sure">Not sure</SelectItem></SelectContent>
+                                            <SelectTrigger id="color-style"><SelectValue placeholder="Необязательно" /></SelectTrigger>
+                                            <SelectContent><SelectItem value="not_set">Не указано</SelectItem><SelectItem value="Warm">Теплый</SelectItem><SelectItem value="Cool">Холодный</SelectItem><SelectItem value="Neutral">Нейтральный</SelectItem><SelectItem value="Film">Пленочный</SelectItem><SelectItem value="Not sure">Не уверен(а)</SelectItem></SelectContent>
                                         </Select>
                                     </div>
                                 </div>
-                                <DialogFooter class="gap-2"><Button variant="outline" @click="isBriefDialogOpen = false">Cancel</Button><Button @click="createBrief">Generate link</Button></DialogFooter>
+                                <DialogFooter class="gap-2"><Button variant="outline" @click="isBriefDialogOpen = false">Отмена</Button><Button @click="createBrief">Сгенерировать ссылку</Button></DialogFooter>
                             </DialogContent>
                         </Dialog>
 
                         <div class="rounded-[32px] bg-white p-5 shadow-[0px_18px_40px_rgba(20,23,45,0.08)]">
-                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A8FAF]">Selection state</p>
-                            <p class="mt-3 font-onest text-[24px] font-medium leading-none text-[#20243B]">{{ selectedCardIds.length > 0 ? `${selectedCardIds.length} cards selected` : 'All cards included by default' }}</p>
-                            <p class="mt-4 text-sm leading-6 text-[#5C6079]">If you do not select specific cards, the brief generator will use all currently visible examples from this category.</p>
+                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A8FAF]">Состояние выбора</p>
+                            <p class="mt-3 font-onest text-[24px] font-medium leading-none text-[#20243B]">{{ selectedCardIds.length > 0 ? `${selectedCardIds.length} карточек выбрано` : 'По умолчанию будут включены все карточки' }}</p>
+                            <p class="mt-4 text-sm leading-6 text-[#5C6079]">Если вы не выберете конкретные карточки, генератор брифа использует все примеры, которые сейчас видны в этой категории.</p>
                         </div>
                     </aside>
 
@@ -413,10 +413,10 @@ const setBriefColorStyle = (value: string): void => {
                         <div>
                             <div class="flex items-center justify-between gap-4">
                                 <div>
-                                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A8FAF]">Examples</p>
-                                    <h2 class="mt-2 font-onest text-[28px] font-medium leading-none text-[#20243B]">Select visual references</h2>
+                                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A8FAF]">Примеры</p>
+                                    <h2 class="mt-2 font-onest text-[28px] font-medium leading-none text-[#20243B]">Выберите визуальные референсы</h2>
                                 </div>
-                                <p class="text-sm text-[#5C6079]">{{ examples.length }} results</p>
+                                <p class="text-sm text-[#5C6079]">{{ examples.length }} результатов</p>
                             </div>
 
                             <div v-if="examples.length > 0" class="mt-6 grid gap-5 sm:grid-cols-2">
@@ -444,7 +444,7 @@ const setBriefColorStyle = (value: string): void => {
                                         <div class="mt-5 space-y-3">
                                             <p v-if="example.summary" class="category-show-example-description line-clamp-3 text-sm leading-6 text-[#5C6079]">{{ example.summary }}</p>
                                             <p v-else-if="example.location_hint || example.season_hint || example.clothing_hint" class="category-show-example-description line-clamp-3 text-sm leading-6 text-[#5C6079]">{{ [example.location_hint, example.season_hint, example.clothing_hint].filter((value) => value).join(' • ') }}</p>
-                                            <p v-else class="text-sm leading-6 text-[#7A809E]">Matching tags will appear here once filters are assigned.</p>
+                                            <p v-else class="text-sm leading-6 text-[#7A809E]">Подходящие теги появятся здесь после назначения фильтров.</p>
                                         </div>
 
                                         <div v-if="example.filter_option_labels.length > 0" class="mt-5 flex flex-wrap gap-2">
@@ -454,16 +454,16 @@ const setBriefColorStyle = (value: string): void => {
                                 </article>
                             </div>
 
-                            <div v-else class="mt-6 rounded-[28px] border border-dashed border-[#D9DCF3] bg-[#F7F8FF] p-5 text-sm leading-6 text-[#5C6079]">No photos match the selected filters.</div>
+                            <div v-else class="mt-6 rounded-[28px] border border-dashed border-[#D9DCF3] bg-[#F7F8FF] p-5 text-sm leading-6 text-[#5C6079]">Нет фотографий, подходящих под выбранные фильтры.</div>
                         </div>
 
                         <div>
                             <div class="flex items-center justify-between gap-4">
                                 <div>
-                                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A8FAF]">Locations</p>
-                                    <h2 class="mt-2 font-onest text-[28px] font-medium leading-none text-[#20243B]">Recommended locations</h2>
+                                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A8FAF]">Локации</p>
+                                    <h2 class="mt-2 font-onest text-[28px] font-medium leading-none text-[#20243B]">Рекомендуемые локации</h2>
                                 </div>
-                                <Link href="/locations" class="inline-flex items-center gap-2 text-sm text-[#5C6079] transition hover:text-[#20243B]"><span>View all locations</span><ArrowRight class="h-4 w-4" /></Link>
+                                <Link href="/locations" class="inline-flex items-center gap-2 text-sm text-[#5C6079] transition hover:text-[#20243B]"><span>Смотреть все локации</span><ArrowRight class="h-4 w-4" /></Link>
                             </div>
 
                             <div v-if="locations.length > 0" class="mt-6 grid gap-5 sm:grid-cols-2">
@@ -476,7 +476,7 @@ const setBriefColorStyle = (value: string): void => {
                                                 <div class="category-show-location-icon flex h-11 w-11 shrink-0 items-center justify-center rounded-[16px] bg-primary text-white"><MapPinned class="h-5 w-5" /></div>
                                                 <div>
                                                     <h3 class="category-show-location-title font-onest text-[24px] font-medium leading-none text-[#20243B]">{{ location.name }}</h3>
-                                                    <p class="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#8A8FAF]">Location recommendation</p>
+                                                    <p class="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#8A8FAF]">Рекомендованная локация</p>
                                                 </div>
                                             </div>
                                             <div class="category-show-location-arrow flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#D9DCF3] text-[#4252FF]"><ArrowRight class="h-4 w-4" /></div>
@@ -486,7 +486,7 @@ const setBriefColorStyle = (value: string): void => {
                                 </article>
                             </div>
 
-                            <div v-else class="mt-6 rounded-[28px] border border-dashed border-[#D9DCF3] bg-[#F7F8FF] p-5 text-sm leading-6 text-[#5C6079]">No locations match the selected filters for this category.</div>
+                            <div v-else class="mt-6 rounded-[28px] border border-dashed border-[#D9DCF3] bg-[#F7F8FF] p-5 text-sm leading-6 text-[#5C6079]">Нет локаций, подходящих под выбранные фильтры для этой категории.</div>
                         </div>
                     </div>
                 </div>
@@ -494,4 +494,3 @@ const setBriefColorStyle = (value: string): void => {
         </section>
     </AppHeaderLayout>
 </template>
-

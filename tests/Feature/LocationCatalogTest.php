@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\LocationsController;
 use App\Models\Category;
 use App\Models\Location;
 use App\Support\CategoryFilterSchema;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\LocationSeeder;
+use Illuminate\Support\Facades\Route;
 use Inertia\Testing\AssertableInertia as Assert;
 
 it('shows all active locations on locations catalog page', function () {
@@ -34,6 +36,14 @@ it('shows all active locations on locations catalog page', function () {
             ->has('locations', 1)
             ->where('locations.0.name', 'Central Park Belts')
             ->where('locations.0.url', route('locations.show', ['slug' => 'central-park-belts'])));
+});
+
+it('binds location routes to locations controller', function () {
+    expect(Route::getRoutes()->getByName('locations')?->getActionName())
+        ->toBe(LocationsController::class.'@index');
+
+    expect(Route::getRoutes()->getByName('locations.show')?->getActionName())
+        ->toBe(LocationsController::class.'@show');
 });
 
 it('shows recommended locations for category and current filters', function () {
@@ -105,6 +115,25 @@ it('shows location page with photo session examples array', function () {
             ->where('location.name', 'Park Pobedy Belgorod')
             ->has('location.example_photos', 2)
             ->where('metaTitle', 'Photo sessions in Park Pobedy Belgorod'));
+});
+
+it('uses semantic location detail url', function () {
+    $category = Category::factory()->create([
+        'is_active' => true,
+    ]);
+
+    $location = Location::factory()->create([
+        'category_id' => $category->id,
+        'slug' => 'park-pobedy-belgorod',
+        'is_active' => true,
+    ]);
+
+    expect(route('locations.show', ['slug' => $location->slug], false))
+        ->toBe('/location/park-pobedy-belgorod');
+
+    $this->get('/location/park-pobedy-belgorod')
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page->component('LocationShow'));
 });
 
 it('seeds at least ten active locations for each category filter option', function () {

@@ -26,16 +26,16 @@ const publishedArticlesCount = computed<number>(() => {
 
 const blogHighlights = [
     {
-        title: 'Useful reading',
-        description: 'Collect practical recommendations, references, and planning tips in one section.',
+        title: 'Полезные материалы',
+        description: 'Собирайте практические рекомендации, референсы и советы по подготовке в одном разделе.',
     },
     {
-        title: 'Quick scanning',
-        description: 'Preview each article by image, title, excerpt, and publication date before opening it.',
+        title: 'Быстрый просмотр',
+        description: 'Смотрите превью статьи по картинке, заголовку, описанию и дате публикации перед открытием.',
     },
     {
-        title: 'Planning support',
-        description: 'Use the guides alongside categories, locations, and photographers while preparing a shoot.',
+        title: 'Поддержка при планировании',
+        description: 'Используйте материалы вместе с категориями, локациями и фотографами при подготовке к съемке.',
     },
 ]
 
@@ -44,7 +44,7 @@ const blogExcerpt = (blog: BlogCard): string => {
         return blog.excerpt
     }
 
-    return 'A practical guide from the Belgorod photo session catalog.'
+    return 'Практический материал из каталога фотосессий Белгорода.'
 }
 
 useHead(() => ({
@@ -74,46 +74,46 @@ useHead(() => ({
                             <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary">
                                 <Sparkles class="h-3.5 w-3.5" />
                             </span>
-                            <span>Back to catalog</span>
+                            <span>Назад в каталог</span>
                         </Link>
 
                         <div class="mt-7 grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
                             <div>
                                 <h1 class="text-[#20243B]">
                                     <span class="font-onest text-[38px] font-medium leading-none tracking-[-0.02em] md:text-[54px]">
-                                        Photo
+                                        Фото
                                     </span>
                                     <span class="ml-2 font-playfair text-[44px] font-semibold italic leading-none tracking-[-0.02em] text-[#4252FF] md:text-[64px]">
-                                        Guides
+                                        статьи
                                     </span>
                                 </h1>
 
                                 <p class="mt-5 max-w-3xl text-sm leading-6 text-[#5C6079] md:text-base">
-                                    Tips, guides, and practical recommendations that help move from inspiration to a more structured photo session plan.
+                                    Советы, статьи и практические рекомендации, которые помогают перейти от вдохновения к более понятному плану фотосессии.
                                 </p>
                             </div>
 
                             <div class="rounded-[24px] bg-white p-5 shadow-[0px_18px_40px_rgba(20,23,45,0.08)]">
                                 <div class="grid gap-4 sm:grid-cols-2">
                                     <div class="rounded-[20px] bg-[#F7F8FF] px-4 py-4">
-                                        <p class="font-onest text-sm font-medium text-[#A0A3B8]">Available articles</p>
+                                        <p class="font-onest text-sm font-medium text-[#A0A3B8]">Доступные статьи</p>
                                         <div class="mt-3 flex items-end gap-3">
                                             <span class="font-onest text-5xl font-medium leading-none text-[#20243B]">{{ blogs.length }}</span>
-                                            <span class="pb-1 text-sm text-[#5C6079]">guides to read</span>
+                                            <span class="pb-1 text-sm text-[#5C6079]">статей для чтения</span>
                                         </div>
                                     </div>
 
                                     <div class="rounded-[20px] bg-[#20243B] px-4 py-4 text-white">
-                                        <p class="font-onest text-sm font-medium text-white/60">Published entries</p>
+                                        <p class="font-onest text-sm font-medium text-white/60">Опубликованные материалы</p>
                                         <div class="mt-3 flex items-end gap-3">
                                             <span class="font-onest text-5xl font-medium leading-none">{{ publishedArticlesCount }}</span>
-                                            <span class="pb-1 text-sm text-white/70">with visible dates</span>
+                                            <span class="pb-1 text-sm text-white/70">с видимой датой</span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="mt-4 rounded-[18px] border border-[#E2E5F6] bg-white px-4 py-3 text-sm leading-6 text-[#303651]">
-                                    Use this page as a reading layer inside the product, before diving into specific categories, locations, or photographers.
+                                    Используйте эту страницу как слой с полезными материалами внутри продукта, прежде чем переходить к конкретным категориям, локациям или фотографам.
                                 </div>
                             </div>
                         </div>
@@ -178,7 +178,7 @@ useHead(() => ({
                                 </p>
 
                                 <div class="mt-5 inline-flex items-center gap-2 rounded-full border border-[#D9DCF3] bg-white px-4 py-2 text-sm font-medium text-[#4252FF]">
-                                    <span>Read article</span>
+                                    <span>Читать статью</span>
                                     <ArrowRight class="h-4 w-4" />
                                 </div>
                             </div>
@@ -189,9 +189,9 @@ useHead(() => ({
                         v-else
                         class="rounded-[28px] bg-white p-6 shadow-[0px_18px_40px_rgba(20,23,45,0.08)]"
                     >
-                        <p class="font-onest text-[24px] font-medium text-[#20243B]">Blog is empty.</p>
+                        <p class="font-onest text-[24px] font-medium text-[#20243B]">Блог пуст.</p>
                         <p class="mt-3 max-w-2xl text-sm leading-6 text-[#5C6079]">
-                            Add guide entries in the admin panel and they will appear here in the public catalog.
+                            Добавьте материалы в админ-панели, и они появятся здесь в публичном каталоге.
                         </p>
                     </div>
 

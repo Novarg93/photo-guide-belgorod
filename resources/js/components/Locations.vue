@@ -27,7 +27,7 @@ const locationDescription = (description: string | null) => {
 <template>
     <section ref="sectionRef" class="bg-card">
         <div class="mx-auto w-full max-w-7xl px-5 py-10 md:py-14">
-            <div class="relative overflow-hidden rounded-[32px] bg-card  py-10  md:py-14">
+            <div class="relative  rounded-[32px] bg-card  py-10  md:py-14">
                 <div class="grid-overlay-hero">
                     <div></div>
                     <div></div>
@@ -37,7 +37,7 @@ const locationDescription = (description: string | null) => {
                 </div>
 
                 <div class="relative z-10">
-                    <div class="mb-14 grid gap-6 md:grid-cols-3 md:items-start">
+                    <div class="mb-14 grid gap-14 md:gap-8 lg:gap-8 md:grid-cols-3 md:items-start">
                         <div
                             :class="[
                                 'locations-step-card locations-step-card-1 relative overflow-hidden rounded-xl bg-white py-3 rotate-6',
@@ -176,7 +176,7 @@ const locationDescription = (description: string | null) => {
                             <div class="relative mt-4">
                                 <div
                                     :class="[
-                                        'locations-step-inner-2 mx-auto h-45 w-3/4 rounded-2xl border border-primary p-2 px-0',
+                                        'locations-step-inner-2 mx-auto h-40 w-3/4 rounded-2xl border border-primary p-2 px-0',
                                         isVisible && 'reveal-active',
                                     ]"
                                 >

@@ -25,7 +25,7 @@ const locationDescription = (location: LocationCard): string => {
         return location.description
     }
 
-    return 'A local location in Belgorod suitable for planning a photo session.'
+    return 'Локация в Белгороде, подходящая для планирования фотосессии.'
 }
 
 useHead(() => ({
@@ -57,34 +57,34 @@ useHead(() => ({
                             <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary">
                                 <Sparkles class="h-3.5 w-3.5" />
                             </span>
-                            <span>Back to catalog</span>
+                            <span>Назад в каталог</span>
                         </Link>
 
                         <div class="mt-7 grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
                             <div>
                                 <h1 class="text-[#20243B]">
                                     <span class="font-onest text-[38px] font-medium leading-none tracking-[-0.02em] md:text-[54px]">
-                                        Locations
+                                        Локации
                                     </span>
                                     <span class="ml-2 font-playfair text-[44px] font-semibold italic leading-none tracking-[-0.02em] text-[#4252FF] md:text-[64px]">
-                                        Catalog
+                                        каталог
                                     </span>
                                 </h1>
 
                                 <p class="mt-5 max-w-3xl text-sm leading-6 text-[#5C6079] md:text-base">
-                                    All available locations for photo sessions in Belgorod, collected in one place for faster browsing and clearer comparisons.
+                                    Все доступные локации для фотосессий в Белгороде собраны в одном месте для быстрого просмотра и удобного сравнения.
                                 </p>
                             </div>
 
                             <div class="rounded-[24px] bg-white p-5 shadow-[0px_18px_40px_rgba(20,23,45,0.08)]">
-                                <p class="font-onest text-sm font-medium text-[#A0A3B8]">Available locations</p>
+                                <p class="font-onest text-sm font-medium text-[#A0A3B8]">Доступные локации</p>
                                 <div class="mt-3 flex items-end gap-3">
                                     <span class="font-onest text-5xl font-medium leading-none text-[#20243B]">{{ locations.length }}</span>
-                                    <span class="pb-1 text-sm text-[#5C6079]">places to review</span>
+                                    <span class="pb-1 text-sm text-[#5C6079]">мест для просмотра</span>
                                 </div>
 
                                 <div class="mt-5 rounded-[18px] bg-[#F7F8FF] px-4 py-3 text-sm leading-6 text-[#303651]">
-                                    Compare the mood, category fit, and image references before moving deeper into a specific location page.
+                                    Сравните атмосферу, соответствие категории и референсы перед переходом на страницу конкретной локации.
                                 </div>
                             </div>
                         </div>
@@ -153,9 +153,9 @@ useHead(() => ({
                     v-else
                     class="mt-8 rounded-[28px] bg-white p-6 shadow-[0px_18px_40px_rgba(20,23,45,0.08)]"
                 >
-                    <p class="font-onest text-[24px] font-medium text-[#20243B]">Locations catalog is empty.</p>
+                    <p class="font-onest text-[24px] font-medium text-[#20243B]">Каталог локаций пуст.</p>
                     <p class="mt-3 max-w-2xl text-sm leading-6 text-[#5C6079]">
-                        Add location entries in the admin panel and they will appear here in the public catalog.
+                        Добавьте локации в админ-панели, и они появятся здесь.
                     </p>
                 </div>
             </div>
